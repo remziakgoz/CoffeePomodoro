@@ -1,6 +1,5 @@
-package com.example.coffepomodro
+package com.example.coffepomodoro
 
-import CoffeAnimation
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -8,7 +7,8 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
-import com.example.coffepomodro.presentation.ui.theme.CoffePomodroTheme
+import com.example.coffepomodoro.presentation.screens.PomodoroScreen
+import com.example.coffepomodoro.presentation.ui.theme.CoffePomodroTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -17,7 +17,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             CoffePomodroTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    CoffeAnimation(innerPadding, true)
+                    PomodoroScreen(modifier = Modifier, innerPadding)
                 }
             }
         }

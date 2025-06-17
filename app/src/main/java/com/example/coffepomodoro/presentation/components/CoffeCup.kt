@@ -1,7 +1,10 @@
+import android.widget.Button
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -18,13 +21,13 @@ import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.rememberLottieComposition
 
 @Composable
-fun CoffeAnimation(innerPadding: PaddingValues, shouldStart: Boolean) {
+fun CoffeeAnimation(innerPadding: PaddingValues, shouldStart: Boolean) {
     val composition by rememberLottieComposition(LottieCompositionSpec.Asset("cup.json"))
     var progress by remember { mutableFloatStateOf(1f) }
 
     LaunchedEffect(shouldStart, composition) {
         if (shouldStart && composition != null) {
-            val totalDuration = 25 * 60 * 1000L
+            val totalDuration = 1 * 30 * 1000L
             val startTime = withFrameNanos { it }
 
             while (progress > 0f) {
@@ -39,12 +42,12 @@ fun CoffeAnimation(innerPadding: PaddingValues, shouldStart: Boolean) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxWidth()
     ) {
         LottieAnimation(
             composition = composition,
             progress = { progress.coerceIn(0f, 1f) },
-            modifier = Modifier.size(500.dp)
+            modifier = Modifier.size(400.dp)
         )
     }
 }

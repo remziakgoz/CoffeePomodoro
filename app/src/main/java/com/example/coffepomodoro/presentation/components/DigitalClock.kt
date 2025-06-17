@@ -1,4 +1,4 @@
-package com.example.coffepomodro.presentation.components
+package com.example.coffepomodoro.presentation.components
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
@@ -86,7 +87,7 @@ fun DigitalClockCanvas(minutes: Int, seconds: Int) {
             Spacer(modifier = Modifier.run { width(8.dp) })
         }
 
-        Text(":", fontSize = 48.sp, modifier = Modifier.align(Alignment.CenterVertically))
+        Text(":", fontSize = 48.sp, modifier = Modifier.align(Alignment.CenterVertically).padding(bottom = 75.dp))
 
         secDigits.forEach {
             Spacer(modifier = Modifier.width(8.dp))
@@ -97,13 +98,15 @@ fun DigitalClockCanvas(minutes: Int, seconds: Int) {
 
 
 @Composable
-fun PomodoroWithCanvasClock() {
+fun PomodoroWithCanvasClock(shouldStart: Boolean) {
     var timeLeft by remember { mutableIntStateOf(25 * 60) }
 
-    LaunchedEffect(Unit) {
-        while (timeLeft > 0) {
-            delay(1000)
-            timeLeft--
+    LaunchedEffect(shouldStart) {
+        if (shouldStart) {
+            while (timeLeft > 0) {
+                delay(1000)
+                timeLeft--
+            }
         }
     }
 

@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.coffepomodro"
+    namespace = "com.example.coffepomodoro"
     compileSdk = 35
 
     defaultConfig {
