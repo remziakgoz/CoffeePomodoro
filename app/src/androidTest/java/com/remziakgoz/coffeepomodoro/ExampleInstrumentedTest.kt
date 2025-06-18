@@ -1,4 +1,4 @@
-package com.example.coffepomodoro
+package com.remziakgoz.coffeepomodoro
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4

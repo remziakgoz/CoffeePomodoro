@@ -1,4 +1,4 @@
-package com.example.coffepomodoro.presentation.ui.theme
+package com.remziakgoz.coffeepomodoro.presentation.ui.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme

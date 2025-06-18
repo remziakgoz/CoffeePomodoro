@@ -1,4 +1,4 @@
-package com.example.coffepomodoro.presentation.components
+package com.remziakgoz.coffeepomodoro.presentation.components
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
