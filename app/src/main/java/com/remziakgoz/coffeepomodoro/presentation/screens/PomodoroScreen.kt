@@ -1,4 +1,4 @@
-package com.example.coffepomodoro.presentation.screens
+package com.remziakgoz.coffeepomodoro.presentation.screens
 
 import CoffeeAnimation
 import androidx.compose.foundation.layout.Column
@@ -16,8 +16,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.coffepomodoro.presentation.components.PomodoroWithCanvasClock
-import com.example.coffepomodoro.presentation.components.StartButton
+import com.remziakgoz.coffeepomodoro.presentation.components.PomodoroWithCanvasClock
+import com.remziakgoz.coffeepomodoro.presentation.components.StartButton
 
 @Composable
 fun PomodoroScreen(modifier: Modifier, innerPadding: PaddingValues) {
