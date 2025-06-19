@@ -18,3 +18,5 @@ val CoffeeTertiaryDark = Color(0xFF2B1E17)
 val CoffeeSurfaceDark = Color(0xFF14110F)
 val CoffeeOnPrimaryDark = Color(0xFFD8CAB1)
 val CoffeeErrorDark = Color(0xFFB84A39)
+
+val signInColor = Color(0xFFFFCFA9)
