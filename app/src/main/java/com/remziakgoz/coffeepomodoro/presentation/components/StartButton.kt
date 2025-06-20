@@ -18,10 +18,10 @@ import com.airbnb.lottie.compose.rememberLottieAnimatable
 import com.airbnb.lottie.compose.rememberLottieComposition
 
 @Composable
-fun StartButton(shouldStart: Boolean, onClick: () -> Unit) {
+fun StartButton(modifier: Modifier = Modifier, shouldStart: Boolean, onClick: () -> Unit) {
     val composition by rememberLottieComposition(LottieCompositionSpec.Asset("coffeeButton.json"))
-    var isAnimating by remember { mutableStateOf(false) }
     val animatable = rememberLottieAnimatable()
+    var isAnimating by remember { mutableStateOf(false) }
 
     LaunchedEffect(isAnimating) {
         if (isAnimating) {
@@ -41,7 +41,7 @@ fun StartButton(shouldStart: Boolean, onClick: () -> Unit) {
     LottieAnimation(
         composition = composition,
         progress = { animatable.progress },
-        modifier = Modifier
+        modifier = modifier
             .size(300.dp)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() }, indication = null

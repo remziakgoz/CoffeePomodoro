@@ -22,16 +22,14 @@ import com.remziakgoz.coffeepomodoro.presentation.components.StartButton
 @Composable
 fun PomodoroScreen(modifier: Modifier, innerPadding: PaddingValues) {
     var shouldStart by remember { mutableStateOf(false) }
-    val scrollState = rememberScrollState()
 
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(innerPadding)
-            .verticalScroll(scrollState),
+            .padding(innerPadding),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Spacer(modifier = Modifier.padding(top = 50.dp))
+        Spacer(modifier = modifier.padding(top = 50.dp))
         PomodoroWithCanvasClock(shouldStart = shouldStart)
         CoffeeAnimation(innerPadding = innerPadding, shouldStart = shouldStart)
         Spacer(modifier = Modifier.padding(5.dp))

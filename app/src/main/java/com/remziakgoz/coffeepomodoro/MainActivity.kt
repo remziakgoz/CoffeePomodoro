@@ -7,6 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
+import com.remziakgoz.coffeepomodoro.presentation.screens.PomodoroScreen
 import com.remziakgoz.coffeepomodoro.presentation.screens.SignUpScreen
 import com.remziakgoz.coffeepomodoro.presentation.ui.theme.CoffePomodroTheme
 
@@ -17,7 +18,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             CoffePomodroTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    SignUpScreen(modifier = Modifier, innerPadding)
+                    PomodoroScreen(modifier = Modifier, innerPadding)
                 }
             }
         }

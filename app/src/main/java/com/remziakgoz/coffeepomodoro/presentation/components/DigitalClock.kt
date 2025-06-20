@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -48,6 +49,8 @@ fun SegmentDigit(
 
     val active = segments[digit] ?: List(7) { false }
 
+    val segmentColor = MaterialTheme.colorScheme.onBackground
+
     Canvas(modifier = modifier) {
         val w = segmentWidth
         val l = segmentLength
@@ -55,29 +58,29 @@ fun SegmentDigit(
         val centerX = size.width / 2
 
         // A
-        if (active[0]) drawRect(Color.Black, topLeft = Offset(centerX - l/2, 0f), size = Size(l, w))
+        if (active[0]) drawRect(segmentColor, topLeft = Offset(centerX - l/2, 0f), size = Size(l, w))
         // B
-        if (active[1]) drawRect(Color.Black, topLeft = Offset(centerX + l/2 - w, w), size = Size(w, l))
+        if (active[1]) drawRect(segmentColor, topLeft = Offset(centerX + l/2 - w, w), size = Size(w, l))
         // C
-        if (active[2]) drawRect(Color.Black, topLeft = Offset(centerX + l/2 - w, l + 2*w), size = Size(w, l))
+        if (active[2]) drawRect(segmentColor, topLeft = Offset(centerX + l/2 - w, l + 2*w), size = Size(w, l))
         // D
-        if (active[3]) drawRect(Color.Black, topLeft = Offset(centerX - l/2, 2*l + 2*w), size = Size(l, w))
+        if (active[3]) drawRect(segmentColor, topLeft = Offset(centerX - l/2, 2*l + 2*w), size = Size(l, w))
         // E
-        if (active[4]) drawRect(Color.Black, topLeft = Offset(centerX - l/2, l + 2*w), size = Size(w, l))
+        if (active[4]) drawRect(segmentColor, topLeft = Offset(centerX - l/2, l + 2*w), size = Size(w, l))
         // F
-        if (active[5]) drawRect(Color.Black, topLeft = Offset(centerX - l/2, w), size = Size(w, l))
+        if (active[5]) drawRect(segmentColor, topLeft = Offset(centerX - l/2, w), size = Size(w, l))
         // G
-        if (active[6]) drawRect(Color.Black, topLeft = Offset(centerX - l/2, l + w), size = Size(l, w))
+        if (active[6]) drawRect(segmentColor, topLeft = Offset(centerX - l/2, l + w), size = Size(l, w))
     }
 }
 
 @Composable
-fun DigitalClockCanvas(minutes: Int, seconds: Int) {
+fun DigitalClockCanvas(modifier: Modifier = Modifier, minutes: Int, seconds: Int) {
     val minDigits = minutes.toString().padStart(2, '0').map { it.digitToInt() }
     val secDigits = seconds.toString().padStart(2, '0').map { it.digitToInt() }
 
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .height(120.dp),
         horizontalArrangement = Arrangement.Center
