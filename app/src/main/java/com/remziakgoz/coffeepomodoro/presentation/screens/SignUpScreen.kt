@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -32,44 +31,38 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.remziakgoz.coffeepomodoro.R
 import com.remziakgoz.coffeepomodoro.presentation.ui.theme.Pacifico
 import com.remziakgoz.coffeepomodoro.presentation.ui.theme.signInColor
-import org.w3c.dom.Text
 
 @Composable
-fun SignInScreen(modifier: Modifier = Modifier, innerPadding: PaddingValues) {
+fun SignUpScreen(modifier: Modifier = Modifier, innerPadding: PaddingValues) {
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
 
-    Box(
-        modifier = modifier
-            .fillMaxSize()
+    Box(modifier = modifier
+        .fillMaxSize()
     ) {
 
         Image(
             painter = painterResource(R.drawable.welcome),
-            contentDescription = "Sign In Background Image",
+            contentDescription = "Sign Up Background Image",
             modifier = modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
-
         )
 
         Column(
             modifier = modifier
-                .align(Alignment.BottomStart)
+                .align(alignment = Alignment.BottomStart)
                 .padding(horizontal = 24.dp, vertical = 32.dp)
         ) {
             Text(
-                text = "Sign in",
+                text = "Sign Up",
                 fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Start,
                 style = Pacifico,
                 fontSize = 40.sp
             )
@@ -79,14 +72,14 @@ fun SignInScreen(modifier: Modifier = Modifier, innerPadding: PaddingValues) {
             TextField(
                 value = email,
                 onValueChange = { email = it },
-                label = { Text("Email") },
+                label = { Text("Email")},
                 leadingIcon = { Icon(painterResource(R.drawable.mailicon), contentDescription = "Email Icon") },
                 placeholder = { Text("Please enter your email") },
                 singleLine = true,
                 modifier = modifier.fillMaxWidth(),
                 colors = TextFieldDefaults.colors(
                     focusedIndicatorColor = signInColor,
-                        unfocusedIndicatorColor = Color(0xFFFFCC80),
+                    unfocusedIndicatorColor = Color(0xFFFFCC80),
                     focusedContainerColor = Color.Transparent,
                     unfocusedContainerColor = Color.Transparent
                 )
@@ -118,7 +111,6 @@ fun SignInScreen(modifier: Modifier = Modifier, innerPadding: PaddingValues) {
                     focusedContainerColor = Color.Transparent,
                     unfocusedContainerColor = Color.Transparent
                 )
-
             )
 
             Spacer(modifier = modifier.padding(32.dp))
@@ -128,7 +120,7 @@ fun SignInScreen(modifier: Modifier = Modifier, innerPadding: PaddingValues) {
                 contentColor = Color.White
             )) {
                 Text(
-                    text = "Login",
+                    text = "Sign Up",
                     color = Color.White,
                     fontSize = 18.sp,
                     style = Pacifico
@@ -141,16 +133,12 @@ fun SignInScreen(modifier: Modifier = Modifier, innerPadding: PaddingValues) {
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = modifier.fillMaxWidth()
             ) {
-
-                Text("Don't have an Account?", color = Color.Black.copy(alpha = 0.4f), fontSize = 14.sp)
+                Text("Already have an Account?", color = Color.Black.copy(alpha = 0.4f), fontSize = 14.sp)
                 TextButton(onClick = { /*TODO*/ }) {
-                    Text("Sign Up", color = signInColor, fontSize = 14.sp)
+                    Text("Sign In", color = signInColor, fontSize = 14.sp)
                 }
 
-
             }
-
         }
-
     }
 }
