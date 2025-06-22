@@ -19,7 +19,14 @@ import com.airbnb.lottie.compose.rememberLottieComposition
 import kotlinx.coroutines.delay
 
 @Composable
-fun CoffeeAnimation(modifier: Modifier = Modifier, innerPadding: PaddingValues, shouldStart: Boolean) {
+fun CoffeeAnimation(
+    modifier: Modifier = Modifier,
+    innerPadding: PaddingValues,
+    shouldStart: Boolean,
+    shouldReverse: Boolean,
+    onReverseReady: (Boolean) -> Unit,
+    onForwardFinished: () -> Unit
+) {
     val composition by rememberLottieComposition(LottieCompositionSpec.Asset("cup-colored-border-light.json"))
     var progress by remember { mutableFloatStateOf(1f) }
     var pausedTime by remember { mutableLongStateOf(0L) }
@@ -38,6 +45,7 @@ fun CoffeeAnimation(modifier: Modifier = Modifier, innerPadding: PaddingValues, 
                 if (progress <= 0f) {
                     progress = 0f
                     pausedTime = 0L
+                    onForwardFinished()
                     break
                 }
                 delay(16)
@@ -46,6 +54,28 @@ fun CoffeeAnimation(modifier: Modifier = Modifier, innerPadding: PaddingValues, 
             pausedTime = ((1f - progress) * totalDuration).toLong()
         }
     }
+
+    LaunchedEffect(shouldReverse) {
+        if (shouldReverse && composition != null) {
+            val startTime = System.currentTimeMillis()
+
+            while (shouldReverse && progress < 1f) {
+                val currentTime = System.currentTimeMillis()
+                val elapsed = currentTime - startTime
+
+                progress = elapsed.toFloat() / totalDuration
+
+                if (progress >= 1f) {
+                    progress = 1f
+                    onReverseReady(true)
+                    break
+                }
+                delay(16)
+            }
+        }
+    }
+
+
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,

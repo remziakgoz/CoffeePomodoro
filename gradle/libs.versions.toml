@@ -9,6 +9,7 @@ lifecycleRuntimeKtx = "2.9.1"
 activityCompose = "1.10.1"
 composeBom = "2024.09.00"
 coroutines = "1.8.0"
+lifecycleViewModelCompose = "2.6.2"
 lottie = "6.6.6"
 
 [libraries]
@@ -29,6 +30,8 @@ androidx-material3 = { group = "androidx.compose.material3", name = "material3" 
 #Coroutines
 kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
+#LifeCycle
+androidx-lifecycle-viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "lifecycleViewModelCompose" }
 #OtherDep
 lottie-compose = { module = "com.airbnb.android:lottie-compose", version.ref = "lottie"}
 
