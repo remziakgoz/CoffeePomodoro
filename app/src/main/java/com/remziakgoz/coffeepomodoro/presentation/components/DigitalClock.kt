@@ -49,7 +49,7 @@ fun SegmentDigit(
 
     val active = segments[digit] ?: List(7) { false }
 
-    val segmentColor = MaterialTheme.colorScheme.onBackground
+    val segmentColor = Color.White.copy(alpha = 0.9f)
 
     Canvas(modifier = modifier) {
         val w = segmentWidth
@@ -87,10 +87,10 @@ fun DigitalClockCanvas(modifier: Modifier = Modifier, minutes: Int, seconds: Int
     ) {
         minDigits.forEach {
             SegmentDigit(digit = it, segmentWidth = 8f, segmentLength = 50f, modifier = Modifier.size(40.dp, 80.dp))
-            Spacer(modifier = Modifier.run { width(8.dp) })
+            Spacer(modifier = Modifier.width(8.dp))
         }
 
-        Text(":", fontSize = 48.sp, modifier = Modifier.align(Alignment.CenterVertically).padding(bottom = 75.dp))
+        Text(":", fontSize = 48.sp, color = Color.White.copy(alpha = 0.9f), modifier = Modifier.align(Alignment.CenterVertically).padding(bottom = 75.dp))
 
         secDigits.forEach {
             Spacer(modifier = Modifier.width(8.dp))
@@ -101,20 +101,9 @@ fun DigitalClockCanvas(modifier: Modifier = Modifier, minutes: Int, seconds: Int
 
 
 @Composable
-fun PomodoroWithCanvasClock(shouldStart: Boolean) {
-    var timeLeft by remember { mutableIntStateOf(25 * 60) }
-
-    LaunchedEffect(shouldStart) {
-        if (shouldStart) {
-            while (timeLeft > 0) {
-                delay(1000)
-                timeLeft--
-            }
-        }
-    }
-
-    val minutes = timeLeft / 60
-    val seconds = timeLeft % 60
+fun PomodoroWithCanvasClock(remainingTime: Long) {
+    val minutes = (remainingTime / 1000 / 60).toInt()
+    val seconds = (remainingTime / 1000 % 60).toInt()
 
     DigitalClockCanvas(minutes = minutes, seconds = seconds)
 }
