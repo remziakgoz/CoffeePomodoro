@@ -1,58 +1,191 @@
 package com.remziakgoz.coffeepomodoro.presentation.pomodoro.views
 
-import CoffeeAnimation
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.remziakgoz.coffeepomodoro.presentation.components.CoffeeAnimation
 import com.remziakgoz.coffeepomodoro.presentation.components.CoffeeCoreButton
 import com.remziakgoz.coffeepomodoro.presentation.components.PomodoroWithCanvasClock
 import com.remziakgoz.coffeepomodoro.presentation.components.StartButton
+import com.remziakgoz.coffeepomodoro.presentation.pomodoro.PomodoroState
+import com.remziakgoz.coffeepomodoro.presentation.pomodoro.PomodoroViewModel
 
 @Composable
-fun PomodoroScreen(modifier: Modifier, innerPadding: PaddingValues) {
-    var shouldStart by remember { mutableStateOf(false) }
-    var shouldReverse by remember { mutableStateOf(false) }
-    var isReverseReady by remember { mutableStateOf(false) }
-    var isForwardFinished by remember { mutableStateOf(false) }
+fun PomodoroScreen(
+    modifier: Modifier,
+    innerPadding: PaddingValues,
+    viewModel: PomodoroViewModel = viewModel()
+) {
+    val uiState = viewModel.uiState.collectAsState()
+    
+    // Initialize screen state when screen opens
+    LaunchedEffect(Unit) {
+        viewModel.initializeScreenState()
+    }
 
-    Column(
+    // Define colors based on current state
+    val backgroundColors = when (uiState.value.currentState) {
+        PomodoroState.Work, PomodoroState.Paused -> {
+            // Warm colors for work/focus (red/orange tones)
+            Pair(
+                Color(0xFFB85450), // Warm red
+                Color(0xFFD4726A)  // Lighter warm red
+            )
+        }
+        PomodoroState.ShortBreak, PomodoroState.LongBreak -> {
+            // Cool colors for breaks (green/teal tones)
+            Pair(
+                Color(0xFF4A8B8A), // Teal green
+                Color(0xFF6BA6A5)  // Lighter teal
+            )
+        }
+        PomodoroState.Ready -> {
+            // Neutral colors for ready state
+            Pair(
+                Color(0xFF6D6D6D), // Neutral gray
+                Color(0xFF8A8A8A)  // Lighter gray
+            )
+        }
+        else -> {
+            Pair(
+                Color(0xFF6D6D6D), // Default neutral
+                Color(0xFF8A8A8A)
+            )
+        }
+    }
+
+    // Animate background colors smoothly
+    val topColor by animateColorAsState(
+        targetValue = backgroundColors.first,
+        animationSpec = tween(durationMillis = 1000), // 1 second smooth transition
+        label = "topColor"
+    )
+    
+    val bottomColor by animateColorAsState(
+        targetValue = backgroundColors.second,
+        animationSpec = tween(durationMillis = 1000), // 1 second smooth transition
+        label = "bottomColor"
+    )
+
+    // Create gradient background
+    val gradientBrush = Brush.verticalGradient(
+        colors = listOf(topColor, bottomColor),
+        startY = 0f,
+        endY = Float.POSITIVE_INFINITY
+    )
+
+    Box(
         modifier = modifier
             .fillMaxSize()
-            .padding(innerPadding),
-        horizontalAlignment = Alignment.CenterHorizontally,
+            .background(gradientBrush)
     ) {
-        Spacer(modifier = modifier.padding(top = 50.dp))
-        PomodoroWithCanvasClock(shouldStart = shouldStart)
-        CoffeeAnimation(
-            innerPadding = innerPadding,
-            shouldStart = shouldStart,
-            shouldReverse = shouldReverse,
-            onReverseReady = { isReverseReady = it },
-            onForwardFinished = { isForwardFinished = true })
-        Spacer(modifier = Modifier.padding(5.dp))
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Spacer(modifier = modifier.padding(top = 20.dp))
+            
+            // iPhone notch-style cycle indicator
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(
+                        Color.Black.copy(alpha = 0.7f)
+                    )
+                    .padding(horizontal = 20.dp, vertical = 8.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Cycle: ${uiState.value.cycleCount}/4",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Color.White
+                )
+            }
+            
+            Spacer(modifier = Modifier.padding(20.dp))
+            
+            // Show the digital clock with current remaining time
+            PomodoroWithCanvasClock(remainingTime = uiState.value.remainingTime)
+            
+            // Coffee animation with timer progress
+            CoffeeAnimation(
+                innerPadding = innerPadding,
+                animationProgress = uiState.value.animationProgress,
+                animationDuration = when (uiState.value.currentState) {
+                    PomodoroState.Work, PomodoroState.Paused -> 30 * 1000L // 30 seconds for testing
+                    PomodoroState.ShortBreak -> 15 * 1000L // 15 seconds for testing
+                    PomodoroState.LongBreak -> 20 * 1000L // 20 seconds for testing
+                    else -> 30 * 1000L
+                }
+            )
+            
+            Spacer(modifier = Modifier.padding(5.dp))
 
-        when {
-            !isForwardFinished -> {
-                StartButton(
-                    onClick = { shouldStart = !shouldStart },
-                )
+            // Show appropriate button based on current state
+            when (uiState.value.currentState) {
+                PomodoroState.Ready -> {
+                    StartButton(
+                        onClick = { viewModel.toggleTimer() },
+                        isRunning = uiState.value.isRunning
+                    )
+                }
+
+                PomodoroState.Work -> {
+                    StartButton(
+                        onClick = { viewModel.toggleTimer() },
+                        isRunning = uiState.value.isRunning
+                    )
+                }
+
+                PomodoroState.Paused -> {
+                    StartButton(
+                        onClick = { viewModel.toggleTimer() },
+                        isRunning = uiState.value.isRunning
+                    )
+                }
+
+                PomodoroState.ShortBreak -> {
+                    CoffeeCoreButton(onClick = { viewModel.toggleTimer() })
+                }
+
+                PomodoroState.LongBreak -> {
+                    CoffeeCoreButton(onClick = { viewModel.toggleTimer() })
+                }
+
+                else -> {
+                    // Handle other states if needed
+                }
             }
-            !isReverseReady -> {
-                CoffeeCoreButton(
-                    onClick = { shouldReverse = true; shouldStart = !shouldStart}
-                )
-            }
+
+            Spacer(modifier = Modifier.padding(5.dp))
         }
-        Spacer(modifier = Modifier.padding(5.dp))
     }
 }

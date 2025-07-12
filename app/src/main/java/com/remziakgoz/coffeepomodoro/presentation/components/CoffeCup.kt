@@ -1,81 +1,82 @@
+package com.remziakgoz.coffeepomodoro.presentation.components
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableLongStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.unit.dp
+import com.airbnb.lottie.LottieProperty
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.rememberLottieComposition
-import kotlinx.coroutines.delay
+import com.airbnb.lottie.compose.rememberLottieDynamicProperties
+import com.airbnb.lottie.compose.rememberLottieDynamicProperty
 
 @Composable
 fun CoffeeAnimation(
     modifier: Modifier = Modifier,
     innerPadding: PaddingValues,
-    shouldStart: Boolean,
-    shouldReverse: Boolean,
-    onReverseReady: (Boolean) -> Unit,
-    onForwardFinished: () -> Unit
+    animationProgress: Float,
+    animationDuration: Long = 25 * 60 * 1000L
 ) {
-    val composition by rememberLottieComposition(LottieCompositionSpec.Asset("cup-colored-border-light.json"))
-    var progress by remember { mutableFloatStateOf(1f) }
-    var pausedTime by remember { mutableLongStateOf(0L) }
-    val totalDuration = 10_000L
+    val composition by rememberLottieComposition(LottieCompositionSpec.Asset("coffeeCup.json"))
+    
+    val coffeeColor = Color(0xFFE8B85C)
+    
 
-    LaunchedEffect(shouldStart) {
-        if (shouldStart && composition != null) {
-            val startTime = System.currentTimeMillis() - pausedTime
-
-            while (shouldStart && progress > 0f) {
-                val currentTime = System.currentTimeMillis()
-                val elapsed = currentTime - startTime
-
-                progress = 1f - (elapsed.toFloat() / totalDuration)
-
-                if (progress <= 0f) {
-                    progress = 0f
-                    pausedTime = 0L
-                    onForwardFinished()
-                    break
-                }
-                delay(16)
-            }
-        } else if (!shouldStart && progress > 0f) {
-            pausedTime = ((1f - progress) * totalDuration).toLong()
-        }
-    }
-
-    LaunchedEffect(shouldReverse) {
-        if (shouldReverse && composition != null) {
-            val startTime = System.currentTimeMillis()
-
-            while (shouldReverse && progress < 1f) {
-                val currentTime = System.currentTimeMillis()
-                val elapsed = currentTime - startTime
-
-                progress = elapsed.toFloat() / totalDuration
-
-                if (progress >= 1f) {
-                    progress = 1f
-                    onReverseReady(true)
-                    break
-                }
-                delay(16)
-            }
-        }
-    }
-
-
+    val dynamicProperties = rememberLottieDynamicProperties(
+        rememberLottieDynamicProperty(
+            property = LottieProperty.COLOR_FILTER,
+            value = ColorFilter.tint(coffeeColor),
+            keyPath = arrayOf("steam left", "**")
+        ),
+        rememberLottieDynamicProperty(
+            property = LottieProperty.COLOR_FILTER,
+            value = ColorFilter.tint(coffeeColor),
+            keyPath = arrayOf("steam middle", "**")
+        ),
+        rememberLottieDynamicProperty(
+            property = LottieProperty.COLOR_FILTER,
+            value = ColorFilter.tint(coffeeColor),
+            keyPath = arrayOf("steam right", "**")
+        ),
+        rememberLottieDynamicProperty(
+            property = LottieProperty.COLOR_FILTER,
+            value = ColorFilter.tint(coffeeColor),
+            keyPath = arrayOf("steam left 4", "**")
+        ),
+        rememberLottieDynamicProperty(
+            property = LottieProperty.COLOR_FILTER,
+            value = ColorFilter.tint(coffeeColor),
+            keyPath = arrayOf("steam middle 4", "**")
+        ),
+        rememberLottieDynamicProperty(
+            property = LottieProperty.COLOR_FILTER,
+            value = ColorFilter.tint(coffeeColor),
+            keyPath = arrayOf("steam right 4", "**")
+        ),
+        rememberLottieDynamicProperty(
+            property = LottieProperty.COLOR_FILTER,
+            value = ColorFilter.tint(coffeeColor),
+            keyPath = arrayOf("steam left 5", "**")
+        ),
+        rememberLottieDynamicProperty(
+            property = LottieProperty.COLOR_FILTER,
+            value = ColorFilter.tint(coffeeColor),
+            keyPath = arrayOf("steam middle 5", "**")
+        ),
+        rememberLottieDynamicProperty(
+            property = LottieProperty.COLOR_FILTER,
+            value = ColorFilter.tint(coffeeColor),
+            keyPath = arrayOf("steam right 5", "**")
+        )
+    )
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -83,7 +84,8 @@ fun CoffeeAnimation(
     ) {
         LottieAnimation(
             composition = composition,
-            progress = { progress.coerceIn(0f, 1f) },
+            progress = { animationProgress.coerceIn(0f, 1f) },
+            dynamicProperties = dynamicProperties,
             modifier = Modifier.size(400.dp)
         )
     }

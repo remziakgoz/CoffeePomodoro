@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -18,16 +18,15 @@ import com.airbnb.lottie.compose.rememberLottieComposition
 
 @Composable
 fun CoffeeCoreButton(modifier: Modifier = Modifier, onClick: () -> Unit) {
-    val composition by rememberLottieComposition(LottieCompositionSpec.Asset("coreTurn.json"))
+    val composition by rememberLottieComposition(LottieCompositionSpec.Asset("coffeeTurned.json"))
     val animatable = rememberLottieAnimatable()
-    var isClicked by remember { mutableStateOf(false) }
+    var lastClickTime by remember { mutableLongStateOf(0L) }
 
-    LaunchedEffect(isClicked) {
-        if (isClicked && composition != null) {
+    LaunchedEffect(lastClickTime) {
+        if (lastClickTime > 0 && composition != null) {
             animatable.animate(
                 composition = composition
             )
-            isClicked = false
         }
     }
 
@@ -40,7 +39,7 @@ fun CoffeeCoreButton(modifier: Modifier = Modifier, onClick: () -> Unit) {
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null
             ) {
-                isClicked = true
+                lastClickTime = System.currentTimeMillis()
                 onClick()
             }
     )
