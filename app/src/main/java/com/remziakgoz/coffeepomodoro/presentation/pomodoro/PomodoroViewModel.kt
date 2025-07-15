@@ -332,6 +332,63 @@ class PomodoroViewModel : ViewModel() {
         }
     }
 
+    fun restart() {
+        // Cancel any running timers and animations
+        timerJob?.cancel()
+        animationJob?.cancel()
+        
+        // Reset current session based on state, but keep cycle count
+        when (_uiState.value.currentState) {
+            PomodoroState.Work, PomodoroState.Paused -> {
+                // Reset to work state with full pomodoro time
+                _uiState.value = _uiState.value.copy(
+                    currentState = PomodoroState.Ready,
+                    remainingTime = pomodoroTime,
+                    isRunning = false,
+                    animationProgress = 1f,
+                    pausedTime = 0L,
+                    pausedTimeReverse = 0L
+                    // Keep cycleCount unchanged
+                )
+            }
+            PomodoroState.ShortBreak -> {
+                // Reset to short break with full break time
+                _uiState.value = _uiState.value.copy(
+                    currentState = PomodoroState.ShortBreak,
+                    remainingTime = breakTime,
+                    isRunning = false,
+                    animationProgress = 0f,
+                    pausedTime = 0L,
+                    pausedTimeReverse = 0L
+                    // Keep cycleCount unchanged
+                )
+            }
+            PomodoroState.LongBreak -> {
+                // Reset to long break with full break time
+                _uiState.value = _uiState.value.copy(
+                    currentState = PomodoroState.LongBreak,
+                    remainingTime = longBreakTime,
+                    isRunning = false,
+                    animationProgress = 0f,
+                    pausedTime = 0L,
+                    pausedTimeReverse = 0L
+                    // Keep cycleCount unchanged
+                )
+            }
+            PomodoroState.Ready -> {
+                // Already in ready state, just ensure everything is reset
+                _uiState.value = _uiState.value.copy(
+                    remainingTime = pomodoroTime,
+                    isRunning = false,
+                    animationProgress = 1f,
+                    pausedTime = 0L,
+                    pausedTimeReverse = 0L
+                    // Keep cycleCount unchanged
+                )
+            }
+        }
+    }
+
     override fun onCleared() {
         super.onCleared()
         timerJob?.cancel()

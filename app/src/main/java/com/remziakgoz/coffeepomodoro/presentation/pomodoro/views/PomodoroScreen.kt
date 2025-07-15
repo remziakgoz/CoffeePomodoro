@@ -1,13 +1,17 @@
 package com.remziakgoz.coffeepomodoro.presentation.pomodoro.views
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -21,6 +25,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -31,6 +36,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.remziakgoz.coffeepomodoro.presentation.components.CoffeeAnimation
 import com.remziakgoz.coffeepomodoro.presentation.components.CoffeeCoreButton
 import com.remziakgoz.coffeepomodoro.presentation.components.PomodoroWithCanvasClock
+import com.remziakgoz.coffeepomodoro.presentation.components.RestartButton
 import com.remziakgoz.coffeepomodoro.presentation.components.StartButton
 import com.remziakgoz.coffeepomodoro.presentation.pomodoro.PomodoroState
 import com.remziakgoz.coffeepomodoro.presentation.pomodoro.PomodoroViewModel
@@ -92,6 +98,13 @@ fun PomodoroScreen(
         label = "bottomColor"
     )
 
+    // Animate restart button visibility
+    val restartButtonAlpha by animateFloatAsState(
+        targetValue = if (uiState.value.currentState != PomodoroState.Ready) 1f else 0f,
+        animationSpec = tween(durationMillis = 300),
+        label = "restartButtonAlpha"
+    )
+
     // Create gradient background
     val gradientBrush = Brush.verticalGradient(
         colors = listOf(topColor, bottomColor),
@@ -112,21 +125,37 @@ fun PomodoroScreen(
         ) {
             Spacer(modifier = modifier.padding(top = 20.dp))
             
-            // iPhone notch-style cycle indicator
+            // Top bar with centered cycle indicator and positioned restart button
             Box(
                 modifier = Modifier
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(
-                        Color.Black.copy(alpha = 0.7f)
-                    )
-                    .padding(horizontal = 20.dp, vertical = 8.dp),
-                contentAlignment = Alignment.Center
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
             ) {
-                Text(
-                    text = "Cycle: ${uiState.value.cycleCount}/4",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = Color.White
+                // iPhone notch-style cycle indicator - always centered
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(
+                            Color.Black.copy(alpha = 0.7f)
+                        )
+                        .padding(horizontal = 20.dp, vertical = 8.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Cycle: ${uiState.value.cycleCount}/4",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color.White
+                    )
+                }
+                
+                // Restart button in top right - absolute positioning
+                RestartButton(
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .alpha(restartButtonAlpha),
+                    onClick = { viewModel.restart() }
                 )
             }
             
