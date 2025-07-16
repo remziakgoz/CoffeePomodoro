@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "408116047335",
+    "project_id": "coffeepomodoro-73b68",
+    "storage_bucket": "coffeepomodoro-73b68.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:408116047335:android:877f382f4688a9b81f6142",
+        "android_client_info": {
+          "package_name": "com.remziakgoz.coffeepomodoro"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCnuUG52T-Z2GUv3xJ-xppmCurEBMx3zCI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

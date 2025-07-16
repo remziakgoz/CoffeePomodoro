@@ -10,6 +10,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -38,7 +41,12 @@ import com.remziakgoz.coffeepomodoro.presentation.ui.theme.Pacifico
 import com.remziakgoz.coffeepomodoro.presentation.ui.theme.signInColor
 
 @Composable
-fun SignUpScreen(modifier: Modifier = Modifier, innerPadding: PaddingValues) {
+fun SignUpScreen(
+    modifier: Modifier = Modifier, 
+    innerPadding: PaddingValues,
+    onNavigateToSignIn: () -> Unit = {},
+    onNavigateBack: () -> Unit = {}
+) {
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -54,6 +62,20 @@ fun SignUpScreen(modifier: Modifier = Modifier, innerPadding: PaddingValues) {
             modifier = modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
         )
+
+        // Back button in top left
+        IconButton(
+            onClick = onNavigateBack,
+            modifier = Modifier
+                .padding(top = 40.dp, start = 16.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.ArrowBack,
+                contentDescription = "Back",
+                tint = Color.Black,
+                modifier = Modifier.size(28.dp)
+            )
+        }
 
         Column(
             modifier = modifier
@@ -134,7 +156,7 @@ fun SignUpScreen(modifier: Modifier = Modifier, innerPadding: PaddingValues) {
                 modifier = modifier.fillMaxWidth()
             ) {
                 Text("Already have an Account?", color = Color.Black.copy(alpha = 0.4f), fontSize = 14.sp)
-                TextButton(onClick = { /*TODO*/ }) {
+                TextButton(onClick = { onNavigateToSignIn() }) {
                     Text("Sign In", color = signInColor, fontSize = 14.sp)
                 }
 
