@@ -80,10 +80,12 @@ fun StartButton(
                 indication = null
             ) { 
                 val currentTime = System.currentTimeMillis()
-                if (currentTime - lastClickTime >= 300L && !isAnimating) {
+                // Debounce with 800ms delay to prevent rapid clicks
+                if (currentTime - lastClickTime >= 800L && !isAnimating) {
                     onClick()
                     lastClickTime = currentTime
                 }
+                // Ignore rapid successive clicks
             }
     )
 }
