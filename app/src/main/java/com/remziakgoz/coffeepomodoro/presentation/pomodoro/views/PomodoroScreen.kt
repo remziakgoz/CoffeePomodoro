@@ -4,6 +4,7 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -13,9 +14,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -35,6 +39,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.remziakgoz.coffeepomodoro.presentation.components.CoffeeAnimation
 import com.remziakgoz.coffeepomodoro.presentation.components.CoffeeCoreButton
+import com.remziakgoz.coffeepomodoro.presentation.components.NextStepButton
 import com.remziakgoz.coffeepomodoro.presentation.components.PomodoroWithCanvasClock
 import com.remziakgoz.coffeepomodoro.presentation.components.RestartButton
 import com.remziakgoz.coffeepomodoro.presentation.components.StartButton
@@ -48,6 +53,7 @@ fun PomodoroScreen(
     viewModel: PomodoroViewModel = viewModel()
 ) {
     val uiState = viewModel.uiState.collectAsState()
+    var showResetDialog by remember { mutableStateOf(false) }
     
     // Initialize screen state when screen opens
     LaunchedEffect(Unit) {
@@ -100,9 +106,30 @@ fun PomodoroScreen(
 
     // Animate restart button visibility
     val restartButtonAlpha by animateFloatAsState(
-        targetValue = if (uiState.value.currentState != PomodoroState.Ready) 1f else 0f,
+        targetValue = when (uiState.value.currentState) {
+            PomodoroState.Ready -> 0f // Ready'de hiç gösterme
+            PomodoroState.Work, PomodoroState.Paused -> 1f // Work/Paused'da her zaman göster
+            PomodoroState.ShortBreak, PomodoroState.LongBreak -> {
+                if (uiState.value.isRunning) 1f else 0f // Break'lerde sadece çalışıyorsa göster
+            }
+            else -> 0f
+        },
         animationSpec = tween(durationMillis = 300),
         label = "restartButtonAlpha"
+    )
+
+    // Animate next step button visibility with same logic as restart button
+    val nextStepButtonAlpha by animateFloatAsState(
+        targetValue = when (uiState.value.currentState) {
+            PomodoroState.Ready -> 0f // Ready'de hiç gösterme
+            PomodoroState.Work, PomodoroState.Paused -> 1f // Work/Paused'da her zaman göster
+            PomodoroState.ShortBreak, PomodoroState.LongBreak -> {
+                if (uiState.value.isRunning) 1f else 0f // Break'lerde sadece çalışıyorsa göster
+            }
+            else -> 0f
+        },
+        animationSpec = tween(durationMillis = 300),
+        label = "nextStepButtonAlpha"
     )
 
     // Create gradient background
@@ -131,7 +158,7 @@ fun PomodoroScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 20.dp)
             ) {
-                // iPhone notch-style cycle indicator - always centered
+                // iPhone notch-style cycle indicator - always centered and clickable
                 Box(
                     modifier = Modifier
                         .align(Alignment.Center)
@@ -139,11 +166,12 @@ fun PomodoroScreen(
                         .background(
                             Color.Black.copy(alpha = 0.7f)
                         )
+                        .clickable { showResetDialog = true }
                         .padding(horizontal = 20.dp, vertical = 8.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "Cycle: ${uiState.value.cycleCount}/4",
+                        text = "#${uiState.value.cycleCount + 1}",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,
                         color = Color.White
@@ -178,43 +206,94 @@ fun PomodoroScreen(
             
             Spacer(modifier = Modifier.padding(5.dp))
 
-            // Show appropriate button based on current state
-            when (uiState.value.currentState) {
-                PomodoroState.Ready -> {
-                    StartButton(
-                        onClick = { viewModel.toggleTimer() },
-                        isRunning = uiState.value.isRunning
-                    )
-                }
+            // Button layout with start/pause button perfectly centered and next step button on the right
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                // Main button perfectly centered
+                when (uiState.value.currentState) {
+                    PomodoroState.Ready -> {
+                        StartButton(
+                            onClick = { viewModel.toggleTimer() },
+                            isRunning = uiState.value.isRunning
+                        )
+                    }
 
-                PomodoroState.Work -> {
-                    StartButton(
-                        onClick = { viewModel.toggleTimer() },
-                        isRunning = uiState.value.isRunning
-                    )
-                }
+                    PomodoroState.Work -> {
+                        StartButton(
+                            onClick = { viewModel.toggleTimer() },
+                            isRunning = uiState.value.isRunning
+                        )
+                    }
 
-                PomodoroState.Paused -> {
-                    StartButton(
-                        onClick = { viewModel.toggleTimer() },
-                        isRunning = uiState.value.isRunning
-                    )
-                }
+                    PomodoroState.Paused -> {
+                        StartButton(
+                            onClick = { viewModel.toggleTimer() },
+                            isRunning = uiState.value.isRunning
+                        )
+                    }
 
-                PomodoroState.ShortBreak -> {
-                    CoffeeCoreButton(onClick = { viewModel.toggleTimer() })
-                }
+                    PomodoroState.ShortBreak -> {
+                        CoffeeCoreButton(onClick = { viewModel.toggleTimer() })
+                    }
 
-                PomodoroState.LongBreak -> {
-                    CoffeeCoreButton(onClick = { viewModel.toggleTimer() })
-                }
+                    PomodoroState.LongBreak -> {
+                        CoffeeCoreButton(onClick = { viewModel.toggleTimer() })
+                    }
 
-                else -> {
-                    // Handle other states if needed
+                    else -> {
+                        // Handle other states if needed
+                    }
                 }
+                
+                // Next step button positioned on the right
+                NextStepButton(
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .padding(end = 20.dp)
+                        .alpha(nextStepButtonAlpha),
+                    onClick = { viewModel.nextStep() }
+                )
             }
 
             Spacer(modifier = Modifier.padding(5.dp))
+        }
+        
+        // Reset confirmation dialog
+        if (showResetDialog) {
+            AlertDialog(
+                onDismissRequest = { showResetDialog = false },
+                title = {
+                    Text(
+                        text = "Reset Pomodoro Count",
+                        style = MaterialTheme.typography.headlineSmall
+                    )
+                },
+                text = {
+                    Text(
+                        text = "Do you want to refresh the pomodoro count?",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            viewModel.resetEverything()
+                            showResetDialog = false
+                        }
+                    ) {
+                        Text("OK")
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = { showResetDialog = false }
+                    ) {
+                        Text("Cancel")
+                    }
+                }
+            )
         }
     }
 }

@@ -8,8 +8,8 @@ data class PomodoroUiState(
     val animationProgress: Float = 1f,
     val pausedTime: Long = 0L,
     val pausedTimeReverse: Long = 0L,
-    // Cycle tracking for long break
-    val cycleCount: Int = 0 // 0-3, after 4th cycle comes long break
+    // Cycle tracking for infinite pomodoro cycles
+    val cycleCount: Int = 0 // Counts completed pomodoros, long break every 4 cycles (4, 8, 12...)
 )
 
 
