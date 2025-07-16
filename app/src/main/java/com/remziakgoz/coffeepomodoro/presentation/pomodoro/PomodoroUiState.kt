@@ -2,7 +2,7 @@ package com.remziakgoz.coffeepomodoro.presentation.pomodoro
 
 data class PomodoroUiState(
     val currentState: PomodoroState = PomodoroState.Ready,
-    val remainingTime: Long = 25 * 60 * 1000L, //
+    val remainingTime: Long = 12 * 1000L, //
     val isRunning: Boolean = false,
     // Animation state
     val animationProgress: Float = 1f,

@@ -16,9 +16,9 @@ class PomodoroViewModel : ViewModel() {
     
     private var timerJob: Job? = null
     private var animationJob: Job? = null
-    private val pomodoroTime = 25 * 60 * 1000L // 25 minutes
-    private val breakTime = 5 * 60 * 1000L // 5 minutes
-    private val longBreakTime = 15 * 60 * 1000L // 15 minutes
+    private val pomodoroTime = 12 * 1000L // 25 minutes
+    private val breakTime = 4 * 1000L // 5 minutes
+    private val longBreakTime = 8 * 1000L // 15 minutes
 
     // Call this when screen is opened to initialize proper state
     fun initializeScreenState() {
@@ -279,10 +279,10 @@ class PomodoroViewModel : ViewModel() {
         animationJob?.cancel()
         when (_uiState.value.currentState) {
             PomodoroState.Work -> {
-                // Increment cycle count after completing a pomodoro
-                val newCycleCount = _uiState.value.cycleCount + 1
+                // After work, determine break type based on CURRENT cycle count
+                val currentCycleCount = _uiState.value.cycleCount
                 
-                if (newCycleCount % 4 == 0) {
+                if ((currentCycleCount + 1) % 4 == 0) {
                     // Every 4 cycles, long break time! (4, 8, 12, 16...)
                     _uiState.value = _uiState.value.copy(
                         isRunning = false,
@@ -290,42 +290,44 @@ class PomodoroViewModel : ViewModel() {
                         remainingTime = longBreakTime,
                         animationProgress = 0f,
                         pausedTime = 0L,
-                        pausedTimeReverse = 0L,
-                        cycleCount = newCycleCount
+                        pausedTimeReverse = 0L
+                        // Keep cycleCount unchanged - will increment after break
                     )
                 } else {
-                    // Regular short break (cycles 1, 2, 3, 5, 6, 7, 9, 10, 11...)
+                    // Regular short break
                     _uiState.value = _uiState.value.copy(
                         isRunning = false,
                         currentState = PomodoroState.ShortBreak,
                         remainingTime = breakTime,
                         animationProgress = 0f,
                         pausedTime = 0L,
-                        pausedTimeReverse = 0L,
-                        cycleCount = newCycleCount
+                        pausedTimeReverse = 0L
+                        // Keep cycleCount unchanged - will increment after break
                     )
                 }
             }
             PomodoroState.ShortBreak -> {
+                // Increment cycle count AFTER completing break
                 _uiState.value = _uiState.value.copy(
                     isRunning = false,
                     currentState = PomodoroState.Ready,
                     remainingTime = pomodoroTime,
                     animationProgress = 1f,
                     pausedTime = 0L,
-                    pausedTimeReverse = 0L
+                    pausedTimeReverse = 0L,
+                    cycleCount = _uiState.value.cycleCount + 1
                 )
             }
             PomodoroState.LongBreak -> {
-                // Continue the cycle after long break - don't reset cycle count
+                // Increment cycle count AFTER completing long break
                 _uiState.value = _uiState.value.copy(
                     isRunning = false,
                     currentState = PomodoroState.Ready,
                     remainingTime = pomodoroTime,
                     animationProgress = 1f,
                     pausedTime = 0L,
-                    pausedTimeReverse = 0L
-                    // Keep cycleCount unchanged to continue infinite cycle
+                    pausedTimeReverse = 0L,
+                    cycleCount = _uiState.value.cycleCount + 1
                 )
             }
             else -> {}
@@ -340,65 +342,83 @@ class PomodoroViewModel : ViewModel() {
         // Move to next step regardless of timer state
         when (_uiState.value.currentState) {
             PomodoroState.Ready -> {
-                // From Ready, go to ShortBreak (skip work)
-                _uiState.value = _uiState.value.copy(
-                    isRunning = false,
-                    currentState = PomodoroState.ShortBreak,
-                    remainingTime = breakTime,
-                    animationProgress = 0f,
-                    pausedTime = 0L,
-                    pausedTimeReverse = 0L,
-                    cycleCount = _uiState.value.cycleCount + 1
-                )
-            }
-            PomodoroState.Work, PomodoroState.Paused -> {
-                // From Work/Paused, complete current pomodoro and go to appropriate break
-                val newCycleCount = _uiState.value.cycleCount + 1
+                // From Ready, determine break type based on current cycle count
+                val currentCycleCount = _uiState.value.cycleCount
                 
-                if (newCycleCount % 4 == 0) {
-                    // Every 4 cycles, long break time!
+                if ((currentCycleCount + 1) % 4 == 0) {
+                    // Go to long break
                     _uiState.value = _uiState.value.copy(
                         isRunning = false,
                         currentState = PomodoroState.LongBreak,
                         remainingTime = longBreakTime,
                         animationProgress = 0f,
                         pausedTime = 0L,
-                        pausedTimeReverse = 0L,
-                        cycleCount = newCycleCount
+                        pausedTimeReverse = 0L
+                        // Don't increment cycle count yet
                     )
                 } else {
-                    // Regular short break
+                    // Go to short break
                     _uiState.value = _uiState.value.copy(
                         isRunning = false,
                         currentState = PomodoroState.ShortBreak,
                         remainingTime = breakTime,
                         animationProgress = 0f,
                         pausedTime = 0L,
-                        pausedTimeReverse = 0L,
-                        cycleCount = newCycleCount
+                        pausedTimeReverse = 0L
+                        // Don't increment cycle count yet
+                    )
+                }
+            }
+            PomodoroState.Work, PomodoroState.Paused -> {
+                // From Work/Paused, go to appropriate break based on current cycle count
+                val currentCycleCount = _uiState.value.cycleCount
+                
+                if ((currentCycleCount + 1) % 4 == 0) {
+                    // Go to long break
+                    _uiState.value = _uiState.value.copy(
+                        isRunning = false,
+                        currentState = PomodoroState.LongBreak,
+                        remainingTime = longBreakTime,
+                        animationProgress = 0f,
+                        pausedTime = 0L,
+                        pausedTimeReverse = 0L
+                        // Don't increment cycle count yet
+                    )
+                } else {
+                    // Go to short break
+                    _uiState.value = _uiState.value.copy(
+                        isRunning = false,
+                        currentState = PomodoroState.ShortBreak,
+                        remainingTime = breakTime,
+                        animationProgress = 0f,
+                        pausedTime = 0L,
+                        pausedTimeReverse = 0L
+                        // Don't increment cycle count yet
                     )
                 }
             }
             PomodoroState.ShortBreak -> {
-                // From ShortBreak, go to next pomodoro
+                // From ShortBreak, go to next pomodoro and increment cycle count
                 _uiState.value = _uiState.value.copy(
                     isRunning = false,
                     currentState = PomodoroState.Ready,
                     remainingTime = pomodoroTime,
                     animationProgress = 1f,
                     pausedTime = 0L,
-                    pausedTimeReverse = 0L
+                    pausedTimeReverse = 0L,
+                    cycleCount = _uiState.value.cycleCount + 1
                 )
             }
             PomodoroState.LongBreak -> {
-                // From LongBreak, go to next pomodoro
+                // From LongBreak, go to next pomodoro and increment cycle count
                 _uiState.value = _uiState.value.copy(
                     isRunning = false,
                     currentState = PomodoroState.Ready,
                     remainingTime = pomodoroTime,
                     animationProgress = 1f,
                     pausedTime = 0L,
-                    pausedTimeReverse = 0L
+                    pausedTimeReverse = 0L,
+                    cycleCount = _uiState.value.cycleCount + 1
                 )
             }
         }

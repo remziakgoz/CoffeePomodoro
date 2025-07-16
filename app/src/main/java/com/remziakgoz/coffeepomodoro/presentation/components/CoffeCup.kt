@@ -22,8 +22,7 @@ import com.airbnb.lottie.compose.rememberLottieDynamicProperty
 fun CoffeeAnimation(
     modifier: Modifier = Modifier,
     innerPadding: PaddingValues,
-    animationProgress: Float,
-    animationDuration: Long = 25 * 60 * 1000L
+    animationProgress: Float
 ) {
     val composition by rememberLottieComposition(LottieCompositionSpec.Asset("coffeeCup.json"))
     

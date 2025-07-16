@@ -195,13 +195,7 @@ fun PomodoroScreen(
             // Coffee animation with timer progress
             CoffeeAnimation(
                 innerPadding = innerPadding,
-                animationProgress = uiState.value.animationProgress,
-                animationDuration = when (uiState.value.currentState) {
-                    PomodoroState.Work, PomodoroState.Paused -> 30 * 1000L // 30 seconds for testing
-                    PomodoroState.ShortBreak -> 15 * 1000L // 15 seconds for testing
-                    PomodoroState.LongBreak -> 20 * 1000L // 20 seconds for testing
-                    else -> 30 * 1000L
-                }
+                animationProgress = uiState.value.animationProgress
             )
             
             Spacer(modifier = Modifier.padding(5.dp))
