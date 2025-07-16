@@ -14,9 +14,14 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -50,6 +55,7 @@ import com.remziakgoz.coffeepomodoro.presentation.pomodoro.PomodoroViewModel
 fun PomodoroScreen(
     modifier: Modifier,
     innerPadding: PaddingValues,
+    onNavigateToProfile: () -> Unit = {},
     viewModel: PomodoroViewModel = viewModel()
 ) {
     val uiState = viewModel.uiState.collectAsState()
@@ -107,10 +113,10 @@ fun PomodoroScreen(
     // Animate restart button visibility
     val restartButtonAlpha by animateFloatAsState(
         targetValue = when (uiState.value.currentState) {
-            PomodoroState.Ready -> 0f // Ready'de hiç gösterme
-            PomodoroState.Work, PomodoroState.Paused -> 1f // Work/Paused'da her zaman göster
+            PomodoroState.Ready -> 0f //
+            PomodoroState.Work, PomodoroState.Paused -> 1f //
             PomodoroState.ShortBreak, PomodoroState.LongBreak -> {
-                if (uiState.value.isRunning) 1f else 0f // Break'lerde sadece çalışıyorsa göster
+                if (uiState.value.isRunning) 1f else 0f //
             }
             else -> 0f
         },
@@ -121,10 +127,10 @@ fun PomodoroScreen(
     // Animate next step button visibility with same logic as restart button
     val nextStepButtonAlpha by animateFloatAsState(
         targetValue = when (uiState.value.currentState) {
-            PomodoroState.Ready -> 0f // Ready'de hiç gösterme
-            PomodoroState.Work, PomodoroState.Paused -> 1f // Work/Paused'da her zaman göster
+            PomodoroState.Ready -> 0f //
+            PomodoroState.Work, PomodoroState.Paused -> 1f //
             PomodoroState.ShortBreak, PomodoroState.LongBreak -> {
-                if (uiState.value.isRunning) 1f else 0f // Break'lerde sadece çalışıyorsa göster
+                if (uiState.value.isRunning) 1f else 0f //
             }
             else -> 0f
         },
@@ -152,12 +158,35 @@ fun PomodoroScreen(
         ) {
             Spacer(modifier = modifier.padding(top = 20.dp))
             
-            // Top bar with centered cycle indicator and positioned restart button
+            // Top bar with user profile, centered cycle indicator and positioned restart button
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 20.dp)
             ) {
+                // User profile icon in top left - aligned with cycle indicator
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.CenterStart)
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .background(
+                            Color.Black.copy(alpha = 0.7f)
+                        )
+                        .clickable { 
+                            onNavigateToProfile()
+                        }
+                        .padding(8.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = "User Profile",
+                        tint = Color.White.copy(alpha = 0.9f),
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+                
                 // iPhone notch-style cycle indicator - always centered and clickable
                 Box(
                     modifier = Modifier
