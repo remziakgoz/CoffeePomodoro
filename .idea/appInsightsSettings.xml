@@ -22,10 +22,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.remziakgoz.coffeepomodoro" />
+                  <option name="mobileSdkAppId" value="1:408116047335:android:877f382f4688a9b81f6142" />
+                  <option name="projectId" value="coffeepomodoro-73b68" />
+                  <option name="projectNumber" value="408116047335" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />
