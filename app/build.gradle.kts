@@ -69,7 +69,7 @@ dependencies {
     implementation(libs.googleid)
     implementation(libs.dagger.hilt.android)
     implementation(libs.androidx.hilt.navigation.compose)
-    implementation("com.squareup:javapoet:1.13.0")
+    implementation(libs.google.auth)
     kapt(libs.dagger.hilt.android.compiler)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
