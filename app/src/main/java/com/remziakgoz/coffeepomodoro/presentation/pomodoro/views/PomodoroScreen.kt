@@ -41,6 +41,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.remziakgoz.coffeepomodoro.presentation.components.CoffeeAnimation
 import com.remziakgoz.coffeepomodoro.presentation.components.CoffeeCoreButton
@@ -56,7 +57,7 @@ fun PomodoroScreen(
     modifier: Modifier,
     innerPadding: PaddingValues,
     onNavigateToProfile: () -> Unit = {},
-    viewModel: PomodoroViewModel = viewModel()
+    viewModel: PomodoroViewModel = hiltViewModel()
 ) {
     val uiState = viewModel.uiState.collectAsState()
     var showResetDialog by remember { mutableStateOf(false) }
@@ -85,14 +86,14 @@ fun PomodoroScreen(
         PomodoroState.Ready -> {
             // Neutral colors for ready state
             Pair(
-                Color(0xFF6D6D6D), // Neutral gray
-                Color(0xFF8A8A8A)  // Lighter gray
+                Color(0xFFB85450), // Neutral gray -> Old 0xFF6D6D6D
+                Color(0xFFD4726A)  // Lighter gray -> Old 0xFF8A8A8A
             )
         }
         else -> {
             Pair(
-                Color(0xFF6D6D6D), // Default neutral
-                Color(0xFF8A8A8A)
+                Color(0xFFB85450), // Default neutral -> Old 0xFF6D6D6D
+                Color(0xFFD4726A) //               -> Old 0xFF8A8A8A
             )
         }
     }

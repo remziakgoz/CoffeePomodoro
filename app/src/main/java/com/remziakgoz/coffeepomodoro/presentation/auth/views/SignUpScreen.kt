@@ -1,5 +1,6 @@
 package com.remziakgoz.coffeepomodoro.presentation.auth.views
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -30,13 +31,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.remziakgoz.coffeepomodoro.R
+import com.remziakgoz.coffeepomodoro.presentation.auth.AuthViewModel
 import com.remziakgoz.coffeepomodoro.presentation.ui.theme.Pacifico
 import com.remziakgoz.coffeepomodoro.presentation.ui.theme.signInColor
 
@@ -45,12 +49,14 @@ fun SignUpScreen(
     modifier: Modifier = Modifier, 
     innerPadding: PaddingValues,
     onNavigateToSignIn: () -> Unit = {},
-    onNavigateBack: () -> Unit = {}
+    onNavigateBack: () -> Unit = {},
+    viewModel: AuthViewModel = hiltViewModel()
 ) {
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
     Box(modifier = modifier
         .fillMaxSize()
@@ -137,7 +143,18 @@ fun SignUpScreen(
 
             Spacer(modifier = modifier.padding(32.dp))
 
-            Button(onClick = { /*TODO*/ }, modifier = modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(
+            Button(onClick = {
+                if (email.isEmpty() || password.isEmpty()) {
+                    Toast.makeText(context, "Enter email and password!", Toast.LENGTH_LONG).show()
+                } else {
+                    viewModel.signUp(email,password,
+                        onSuccess = { onNavigateBack() },
+                        onError = { errorMsg ->
+                            Toast.makeText(context, errorMsg, Toast.LENGTH_LONG).show()
+                        }
+                    )
+                }
+            }, modifier = modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(
                 containerColor = signInColor,
                 contentColor = Color.White
             )) {

@@ -1,7 +1,7 @@
 package com.remziakgoz.coffeepomodoro.presentation.auth.views
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
@@ -32,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -39,21 +39,26 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.remziakgoz.coffeepomodoro.R
+import com.remziakgoz.coffeepomodoro.presentation.auth.AuthViewModel
 import com.remziakgoz.coffeepomodoro.presentation.ui.theme.Pacifico
 import com.remziakgoz.coffeepomodoro.presentation.ui.theme.signInColor
+
 
 @Composable
 fun SignInScreen(
     modifier: Modifier = Modifier, 
     innerPadding: PaddingValues,
     onNavigateBack: () -> Unit = {},
-    onNavigateToSignUp: () -> Unit = {}
+    onNavigateToSignUp: () -> Unit = {},
+    viewModel: AuthViewModel = hiltViewModel()
 ) {
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
     Box(
         modifier = modifier
@@ -143,7 +148,18 @@ fun SignInScreen(
 
             Spacer(modifier = modifier.padding(32.dp))
 
-            Button(onClick = { /*TODO*/ }, modifier = modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(
+            Button(onClick = {
+                if (email.isEmpty() || password.isEmpty()) {
+                    Toast.makeText(context, "Enter email and password!", Toast.LENGTH_LONG).show()
+                } else {
+                    viewModel.signIn(email, password,
+                        onSuccess = { onNavigateBack() },
+                        onError = { errorMsg ->
+                            Toast.makeText(context, errorMsg, Toast.LENGTH_LONG).show()
+                        }
+                    )
+                }
+            }, modifier = modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(
                 containerColor = signInColor,
                 contentColor = Color.White
             )) {

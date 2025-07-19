@@ -2,16 +2,23 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.google.services)
+    alias(libs.plugins.dagger.hilt.android.gradle.plugin)
+    id("kotlin-kapt")
+}
+
+hilt {
+    enableAggregatingTask = false
 }
 
 android {
     namespace = "com.remziakgoz.coffeepomodoro"
-    compileSdk = 36
+    compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.coffepomodro"
+        applicationId = "com.remziakgoz.coffeepomodoro"
         minSdk = 24
-        targetSdk = 36
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -57,6 +64,13 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth.ktx)
     implementation(libs.firebase.analytics.ktx)
+    implementation(libs.credentials)
+    implementation(libs.credentials.play.services.auth)
+    implementation(libs.googleid)
+    implementation(libs.dagger.hilt.android)
+    implementation(libs.androidx.hilt.navigation.compose)
+    implementation("com.squareup:javapoet:1.13.0")
+    kapt(libs.dagger.hilt.android.compiler)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

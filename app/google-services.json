@@ -12,7 +12,20 @@
           "package_name": "com.remziakgoz.coffeepomodoro"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "408116047335-ovg549oul3h4po9m2nur6lm2l1okmobd.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.remziakgoz.coffeepomodoro",
+            "certificate_hash": "32a0dda01ec5d7e7595c14097a77dace4f750a71"
+          }
+        },
+        {
+          "client_id": "408116047335-jrfoapaa5jnapdf6q5lq58vkm4scenm8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCnuUG52T-Z2GUv3xJ-xppmCurEBMx3zCI"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "408116047335-jrfoapaa5jnapdf6q5lq58vkm4scenm8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
