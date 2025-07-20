@@ -22,7 +22,7 @@ class PomodoroViewModel @Inject constructor(
     private var animationJob: Job? = null
     private val pomodoroTime = 12 * 1000L // 25 minutes
     private val breakTime = 4 * 1000L // 5 minutes
-    private val longBreakTime = 8 * 1000L // 15 minutes
+    private val longBreakTime = 8 * 60 * 1000L // 15 minutes
 
     // Call this when screen is opened to initialize proper state
     fun initializeScreenState() {

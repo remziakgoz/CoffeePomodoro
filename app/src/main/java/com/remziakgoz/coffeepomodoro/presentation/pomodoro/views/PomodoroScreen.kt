@@ -8,14 +8,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -29,6 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -42,9 +40,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.remziakgoz.coffeepomodoro.presentation.components.CoffeeAnimation
 import com.remziakgoz.coffeepomodoro.presentation.components.CoffeeCoreButton
+import com.remziakgoz.coffeepomodoro.presentation.components.CoffeeMachineAnimation
 import com.remziakgoz.coffeepomodoro.presentation.components.NextStepButton
 import com.remziakgoz.coffeepomodoro.presentation.components.PomodoroWithCanvasClock
 import com.remziakgoz.coffeepomodoro.presentation.components.RestartButton
@@ -61,6 +59,7 @@ fun PomodoroScreen(
 ) {
     val uiState = viewModel.uiState.collectAsState()
     var showResetDialog by remember { mutableStateOf(false) }
+    var restartCounter by remember { mutableIntStateOf(0) }
     
     // Initialize screen state when screen opens
     LaunchedEffect(Unit) {
@@ -213,7 +212,10 @@ fun PomodoroScreen(
                     modifier = Modifier
                         .align(Alignment.CenterEnd)
                         .alpha(restartButtonAlpha),
-                    onClick = { viewModel.restart() }
+                    onClick = { 
+                        viewModel.restart()
+                        restartCounter++
+                    }
                 )
             }
             
@@ -222,11 +224,21 @@ fun PomodoroScreen(
             // Show the digital clock with current remaining time
             PomodoroWithCanvasClock(remainingTime = uiState.value.remainingTime)
             
-            // Coffee animation with timer progress
-            CoffeeAnimation(
-                innerPadding = innerPadding,
-                animationProgress = uiState.value.animationProgress
-            )
+            // Coffee animation with timer progress and Coffee machine animation when in long break
+            when (uiState.value.currentState) {
+                PomodoroState.LongBreak -> {
+                    CoffeeMachineAnimation(
+                        innerPadding = innerPadding,
+                        shouldPlay = uiState.value.isRunning,
+                        shouldRestart = restartCounter > 0,
+                        onRestartConsumed = { restartCounter = 0 }
+                    )
+                } else ->
+                    CoffeeAnimation(
+                        innerPadding = innerPadding,
+                        animationProgress = uiState.value.animationProgress
+                    )
+            }
             
             Spacer(modifier = Modifier.padding(5.dp))
 

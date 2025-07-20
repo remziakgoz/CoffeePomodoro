@@ -21,7 +21,7 @@ fun CoffeeCoreButton(modifier: Modifier = Modifier, onClick: () -> Unit) {
     val composition by rememberLottieComposition(LottieCompositionSpec.Asset("coffeeTurned.json"))
     val animatable = rememberLottieAnimatable()
     var lastClickTime by remember { mutableLongStateOf(0L) }
-    
+
     // Debounce delay in milliseconds
     val debounceDelay = 1000L // 1 second
 
@@ -47,7 +47,7 @@ fun CoffeeCoreButton(modifier: Modifier = Modifier, onClick: () -> Unit) {
                 // Only process click if enough time has passed since last click
                 if (currentTime - lastClickTime >= debounceDelay) {
                     lastClickTime = currentTime
-                    onClick()
+                onClick()
                 }
                 // Ignore rapid successive clicks
             }
