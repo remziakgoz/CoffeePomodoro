@@ -271,11 +271,11 @@ fun PomodoroScreen(
                     }
 
                     PomodoroState.ShortBreak -> {
-                        CoffeeCoreButton(onClick = { viewModel.toggleTimer() })
+                        CoffeeCoreButton(onClick = { viewModel.toggleTimer() }, lottieAssetName = "coffeeTurned.json")
                     }
 
                     PomodoroState.LongBreak -> {
-                        CoffeeCoreButton(onClick = { viewModel.toggleTimer() })
+                        CoffeeCoreButton(onClick = { viewModel.toggleTimer() }, lottieAssetName = "coreButtonForLongBreak.json")
                     }
 
                     else -> {

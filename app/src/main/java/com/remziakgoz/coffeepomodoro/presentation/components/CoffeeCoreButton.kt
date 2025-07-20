@@ -17,8 +17,8 @@ import com.airbnb.lottie.compose.rememberLottieAnimatable
 import com.airbnb.lottie.compose.rememberLottieComposition
 
 @Composable
-fun CoffeeCoreButton(modifier: Modifier = Modifier, onClick: () -> Unit) {
-    val composition by rememberLottieComposition(LottieCompositionSpec.Asset("coffeeTurned.json"))
+fun CoffeeCoreButton(modifier: Modifier = Modifier, onClick: () -> Unit, lottieAssetName: String) {
+    val composition by rememberLottieComposition(LottieCompositionSpec.Asset(lottieAssetName))
     val animatable = rememberLottieAnimatable()
     var lastClickTime by remember { mutableLongStateOf(0L) }
 
