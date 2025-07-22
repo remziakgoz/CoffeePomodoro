@@ -55,7 +55,7 @@ fun RestartButton(modifier: Modifier = Modifier, onClick: () -> Unit) {
                 .blur(8.dp)
         )
         
-        // Main button with glassmorphism
+        // Main button with glass morphism
         Box(
             modifier = Modifier
                 .size(48.dp)
