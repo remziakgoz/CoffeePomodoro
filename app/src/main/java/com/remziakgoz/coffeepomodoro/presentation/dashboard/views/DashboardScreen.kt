@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Icon
@@ -35,6 +37,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.remziakgoz.coffeepomodoro.R
 import com.remziakgoz.coffeepomodoro.presentation.components.CoffeeProgressCard
+import com.remziakgoz.coffeepomodoro.presentation.components.CompactWeeklyProgress
+import com.remziakgoz.coffeepomodoro.presentation.components.AchievementSection
+import com.remziakgoz.coffeepomodoro.presentation.components.CoffeeTipSection
+import com.remziakgoz.coffeepomodoro.presentation.components.QuickStatsSection
 
 @Composable
 fun DashboardScreen(modifier: Modifier = Modifier) {
@@ -53,6 +59,7 @@ fun DashboardScreen(modifier: Modifier = Modifier) {
         Column(
             modifier = modifier
                 .fillMaxSize()
+                .verticalScroll(rememberScrollState())
         ) {
 
             Box(
@@ -109,58 +116,67 @@ fun DashboardScreen(modifier: Modifier = Modifier) {
 
             Spacer(modifier = modifier.size(22.dp))
 
-            Box {
+            Box(
+                modifier = modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
                 Row(
-                    modifier = modifier.padding(start = 5.dp, end = 5.dp)
+                    modifier = modifier.padding(horizontal = 4.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     CoffeeProgressCard(
                         counter = 3,
                         imageId = R.drawable.cup1fordb,
                         dayProgress = "Today"
                     )
-                    Spacer(modifier = modifier.padding(5.dp))
+                    Spacer(modifier =  modifier.size(8.dp))
                     CoffeeProgressCard(
                         counter = 15,
                         imageId = R.drawable.cup7fordb,
                         dayProgress = "Week"
                     )
-                    Spacer(modifier = modifier.padding(5.dp))
+                    Spacer(modifier =  modifier.size(8.dp))
                     CoffeeProgressCard(
                         counter = 54,
                         imageId = R.drawable.cupcorefordb2,
                         dayProgress = "Month"
                     )
-
                 }
             }
-            Spacer(modifier = modifier.size(80.dp))
+            Spacer(modifier = modifier.size(24.dp))
 
-            Box(modifier = modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                Row(horizontalArrangement = Arrangement.SpaceEvenly) {
-                    days.forEachIndexed { index, day ->
-                        Box(
-                            modifier = modifier
-                                .padding(4.dp)
-                                .padding(8.dp)
-                        ) {
-                            Box(
+            // Modern Weekly Progress Report
+            CompactWeeklyProgress(
+                progress = 15,
+                goal = 35,
+                dailyData = listOf(3, 2, 4, 1, 5, 0, 0),
+                modifier = modifier.padding(horizontal = 16.dp)
+            )
 
-                            ) {
+            Spacer(modifier = modifier.size(12.dp))
 
-                            }
-                            Text(
-                                text = day,
-                                fontSize = 36.sp,
-                                color = Color.White.copy(
-                                    alpha = 0.8f
-                                ),
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
+            // Bottom Section - Responsive Layout
+            
+            // Option 1: Achievement Badges
+            AchievementSection(
+                modifier = modifier.padding(horizontal = 16.dp)
+            )
 
-                }
-            }
+            Spacer(modifier = modifier.size(8.dp))
+            
+            // Option 2: Quick Stats
+            QuickStatsSection(
+                modifier = modifier.padding(horizontal = 16.dp)
+            )
+            
+            Spacer(modifier = modifier.size(8.dp))
+            
+            // Option 3: Coffee Tip
+            CoffeeTipSection(
+                modifier = modifier.padding(horizontal = 16.dp)
+            )
+
+            Spacer(modifier = modifier.size(24.dp))
 
         }
 

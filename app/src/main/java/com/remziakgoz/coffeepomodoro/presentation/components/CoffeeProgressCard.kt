@@ -35,7 +35,7 @@ fun CoffeeProgressCard(modifier: Modifier = Modifier, counter: Int, imageId: Int
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
-            modifier = modifier.background(color = Color(0xFFF5E5DA)).padding(16.dp)
+            modifier = modifier.background(color = Color(0xFFE3CBA5)).padding(16.dp)
 
         ) {
             Text(
