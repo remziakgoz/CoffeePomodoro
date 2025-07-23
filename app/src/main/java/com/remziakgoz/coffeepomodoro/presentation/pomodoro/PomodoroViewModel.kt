@@ -2,6 +2,9 @@ package com.remziakgoz.coffeepomodoro.presentation.pomodoro
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
+import com.remziakgoz.coffeepomodoro.data.local.entities.SessionType
+import com.remziakgoz.coffeepomodoro.domain.usecase.SavePomodoroSessionUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -13,6 +16,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PomodoroViewModel @Inject constructor(
+    private val savePomodoroSessionUseCase: SavePomodoroSessionUseCase,
+    private val firebaseAuth: FirebaseAuth
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(PomodoroUiState())
@@ -283,6 +288,9 @@ class PomodoroViewModel @Inject constructor(
         animationJob?.cancel()
         when (_uiState.value.currentState) {
             PomodoroState.Work -> {
+                // Save completed work session
+                saveWorkSession()
+                
                 // After work, determine break type based on CURRENT cycle count
                 val currentCycleCount = _uiState.value.cycleCount
                 
@@ -335,6 +343,29 @@ class PomodoroViewModel @Inject constructor(
                 )
             }
             else -> {}
+        }
+    }
+    
+    private fun saveWorkSession() {
+        val userId = firebaseAuth.currentUser?.uid ?: return
+        val currentCycle = _uiState.value.cycleCount
+        
+        viewModelScope.launch {
+            try {
+                savePomodoroSessionUseCase(
+                    userId = userId,
+                    sessionDuration = pomodoroTime,
+                    breakDuration = breakTime,
+                    sessionType = SessionType.WORK,
+                    cupsConsumed = 1, // Bir session = bir bardak kahve
+                    focusScore = 5, // Default max score için
+                    notes = "cycle:$currentCycle" // Cycle bilgisini notes'da sakla
+                )
+                println("✅ Pomodoro session saved! Cycle: $currentCycle")
+            } catch (e: Exception) {
+                println("❌ Pomodoro session save failed: ${e.message}")
+                // Silent fail - offline support
+            }
         }
     }
 

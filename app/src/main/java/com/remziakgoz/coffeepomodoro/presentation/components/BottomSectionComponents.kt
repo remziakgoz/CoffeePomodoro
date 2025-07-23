@@ -20,6 +20,10 @@ import androidx.compose.ui.text.TextStyle
 // 1. Achievement Badges Section (Responsive)
 @Composable
 fun AchievementSection(
+    goalReached: Boolean = false,
+    threeDayStreak: Boolean = false,
+    morningStarUnlocked: Boolean = false,
+    consistencyUnlocked: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -58,22 +62,22 @@ fun AchievementSection(
             AchievementBadge(
                 icon = "🏆",
                 title = "Goal Reached",
-                isUnlocked = true
+                isUnlocked = goalReached
             )
             AchievementBadge(
                 icon = "🔥",
                 title = "3 Day Streak",
-                isUnlocked = true
+                isUnlocked = threeDayStreak
             )
             AchievementBadge(
                 icon = "⭐",
                 title = "Morning Star",
-                isUnlocked = false
+                isUnlocked = morningStarUnlocked
             )
             AchievementBadge(
                 icon = "💪",
                 title = "Consistency",
-                isUnlocked = false
+                isUnlocked = consistencyUnlocked
             )
         }
     }
@@ -228,6 +232,9 @@ fun CoffeeTipSection(
 // 3. Quick Stats Section
 @Composable
 fun QuickStatsSection(
+    dailyAverage: Double = 0.0,
+    bestStreak: Int = 0,
+    totalCups: Int = 0,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -236,20 +243,20 @@ fun QuickStatsSection(
     ) {
         QuickStatCard(
             title = "Daily Avg",
-            value = "4.2",
+            value = String.format("%.1f", dailyAverage),
             unit = "cups",
             modifier = Modifier.weight(1f)
         )
         QuickStatCard(
             title = "Best Streak",
-            value = "12",
+            value = bestStreak.toString(),
             unit = "days",
             modifier = Modifier.weight(1f)
         )
         QuickStatCard(
             title = "Total",
-            value = "347",
-            unit = "cups",
+            value = totalCups.toString(),
+            unit = "sessions",
             modifier = Modifier.weight(1f)
         )
     }

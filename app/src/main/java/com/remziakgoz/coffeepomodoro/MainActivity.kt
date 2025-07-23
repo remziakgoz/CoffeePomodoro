@@ -18,6 +18,8 @@ import androidx.navigation.compose.rememberNavController
 import com.remziakgoz.coffeepomodoro.presentation.auth.views.SignInScreen
 import com.remziakgoz.coffeepomodoro.presentation.auth.views.SignUpScreen
 import com.remziakgoz.coffeepomodoro.presentation.auth.views.WelcomeScreen
+import com.remziakgoz.coffeepomodoro.presentation.components.SlideScreenContainer
+import com.remziakgoz.coffeepomodoro.presentation.dashboard.views.DashboardScreen
 import com.remziakgoz.coffeepomodoro.presentation.pomodoro.views.PomodoroScreen
 import com.remziakgoz.coffeepomodoro.presentation.ui.theme.CoffePomodroTheme
 import androidx.core.content.edit
@@ -38,19 +40,34 @@ class MainActivity : ComponentActivity() {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     NavHost(
                         navController = navController,
-                        startDestination = "pomodoro"
+                        startDestination = "main"
                     ) {
-                        composable("pomodoro") {
-                            PomodoroScreen(
-                                modifier = Modifier,
-                                innerPadding = innerPadding,
-                                onNavigateToProfile = {
-                                    val hasSeenWelcome = sharedPreferences.getBoolean("has_seen_welcome", false)
-                                    if (hasSeenWelcome) {
-                                        navController.navigate("signin")
-                                    } else {
-                                        navController.navigate("welcome")
-                                    }
+                        composable("main") {
+                            var isShowingDashboard by remember { mutableStateOf(false) }
+                            
+                            SlideScreenContainer(
+                                frontScreen = {
+                                    PomodoroScreen(
+                                        modifier = Modifier,
+                                        innerPadding = innerPadding,
+                                        onNavigateToProfile = {
+                                            val hasSeenWelcome = sharedPreferences.getBoolean("has_seen_welcome", false)
+                                            if (hasSeenWelcome) {
+                                                navController.navigate("signin")
+                                            } else {
+                                                navController.navigate("welcome")
+                                            }
+                                        }
+                                    )
+                                },
+                                backScreen = {
+                                    DashboardScreen(
+                                        modifier = Modifier
+                                    )
+                                },
+                                isShowingBack = isShowingDashboard,
+                                onNavigationRequested = { showDashboard ->
+                                    isShowingDashboard = showDashboard
                                 }
                             )
                         }
@@ -62,7 +79,7 @@ class MainActivity : ComponentActivity() {
                                     // Mark welcome screen as seen
                                     sharedPreferences.edit { putBoolean("has_seen_welcome", true) }
                                     navController.navigate("signin") {
-                                        popUpTo("pomodoro") { inclusive = false }
+                                        popUpTo("main") { inclusive = false }
                                     }
                                 }
                             )
