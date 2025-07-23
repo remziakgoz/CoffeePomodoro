@@ -68,6 +68,6 @@ fun CoffeeProgressCard(modifier: Modifier = Modifier, counter: Int, imageId: Int
 @Preview(showBackground = true)
 @Composable
 fun Preview(modifier: Modifier = Modifier) {
-    CoffeeProgressCard(counter = 3, imageId = R.drawable.cupwidth, dayProgress = "Today")
+    CoffeeProgressCard(counter = 3, imageId = R.drawable.cup5fordb, dayProgress = "Today")
 
 }
