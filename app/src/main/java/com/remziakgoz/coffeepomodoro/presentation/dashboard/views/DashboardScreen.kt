@@ -46,7 +46,6 @@ import com.remziakgoz.coffeepomodoro.presentation.components.QuickStatsSection
 fun DashboardScreen(modifier: Modifier = Modifier) {
 
     val successText by remember { mutableStateOf("Espresso Master\nCups Drank") }
-    val days = listOf("W", "T", "W", "T", "F", "S", "S")
 
     Box(
         modifier = modifier
