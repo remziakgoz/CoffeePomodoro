@@ -1,4 +1,4 @@
-package com.remziakgoz.coffeepomodoro.data.roomdb
+package com.remziakgoz.coffeepomodoro.data.local.roomdb
 
 import androidx.room.Dao
 import androidx.room.Delete

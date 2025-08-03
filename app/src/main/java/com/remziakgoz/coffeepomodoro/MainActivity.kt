@@ -21,6 +21,9 @@ import com.remziakgoz.coffeepomodoro.presentation.auth.views.WelcomeScreen
 import com.remziakgoz.coffeepomodoro.presentation.pomodoro.views.PomodoroScreen
 import com.remziakgoz.coffeepomodoro.presentation.ui.theme.CoffePomodroTheme
 import androidx.core.content.edit
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.remziakgoz.coffeepomodoro.presentation.dashboard.views.DashboardScreen
+import com.remziakgoz.coffeepomodoro.presentation.pomodoro.PomodoroViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -28,28 +31,39 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        
+
         val sharedPreferences = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
-        
+
         setContent {
             CoffePomodroTheme {
                 val navController = rememberNavController()
-                
+
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     NavHost(
                         navController = navController,
-                        startDestination = "pomodoro"
+                        startDestination = "pomodoro",
+                        route = "root"
                     ) {
                         composable("pomodoro") {
+                            val parentEntry = remember(navController.currentBackStackEntry) {
+                                navController.getBackStackEntry("root")
+                            }
+                            val viewModel: PomodoroViewModel = hiltViewModel(parentEntry)
                             PomodoroScreen(
                                 modifier = Modifier,
                                 innerPadding = innerPadding,
+                                viewModel = viewModel,
                                 onNavigateToProfile = {
                                     val hasSeenWelcome = sharedPreferences.getBoolean("has_seen_welcome", false)
                                     if (hasSeenWelcome) {
                                         navController.navigate("signin")
                                     } else {
                                         navController.navigate("welcome")
+                                    }
+                                },
+                                onSwipeToDashboard = {
+                                    navController.navigate("dashboard") {
+                                        launchSingleTop = true
                                     }
                                 }
                             )
@@ -93,6 +107,22 @@ class MainActivity : ComponentActivity() {
                                 onNavigateToSignIn = {
                                     navController.navigate("signin") {
                                         popUpTo("signup") { inclusive = true }
+                                    }
+                                }
+                            )
+                        }
+                        composable("dashboard") {
+                            val parentEntry = remember(navController.currentBackStackEntry) {
+                                navController.getBackStackEntry("root")
+                            }
+                            val viewModel: PomodoroViewModel = hiltViewModel(parentEntry)
+                            DashboardScreen(
+                                modifier = Modifier,
+                                viewModel = viewModel,
+                                onSwipeToPomodoroScreen = {
+                                    navController.navigate("pomodoro") {
+                                        popUpTo("pomodoro") { inclusive = true}
+                                        launchSingleTop = true
                                     }
                                 }
                             )

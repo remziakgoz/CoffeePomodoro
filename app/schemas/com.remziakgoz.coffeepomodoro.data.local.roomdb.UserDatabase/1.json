@@ -1,0 +1,121 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "dc1345acaa17cadc6e361f51c7018a53",
+    "entities": [
+      {
+        "tableName": "UserStats",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`userId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `todayCups` INTEGER NOT NULL, `weeklyCups` INTEGER NOT NULL, `monthlyCups` INTEGER NOT NULL, `weeklyGoal` INTEGER NOT NULL, `bestStreak` INTEGER NOT NULL, `currentStreak` INTEGER NOT NULL, `dailyData` TEXT NOT NULL, `goldReached` INTEGER NOT NULL, `threeDayStreak` INTEGER NOT NULL, `morningStar` INTEGER NOT NULL, `consistency` INTEGER NOT NULL, `dailyAverage` REAL NOT NULL, `totalDays` INTEGER NOT NULL, `totalCups` INTEGER NOT NULL, `lastUpdated` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "userId",
+            "columnName": "userId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "todayCups",
+            "columnName": "todayCups",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "weeklyCups",
+            "columnName": "weeklyCups",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "monthlyCups",
+            "columnName": "monthlyCups",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "weeklyGoal",
+            "columnName": "weeklyGoal",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "bestStreak",
+            "columnName": "bestStreak",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "currentStreak",
+            "columnName": "currentStreak",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dailyData",
+            "columnName": "dailyData",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "goldReached",
+            "columnName": "goldReached",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "threeDayStreak",
+            "columnName": "threeDayStreak",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "morningStar",
+            "columnName": "morningStar",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "consistency",
+            "columnName": "consistency",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dailyAverage",
+            "columnName": "dailyAverage",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "totalDays",
+            "columnName": "totalDays",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "totalCups",
+            "columnName": "totalCups",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastUpdated",
+            "columnName": "lastUpdated",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "userId"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'dc1345acaa17cadc6e361f51c7018a53')"
+    ]
+  }
+}
