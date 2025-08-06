@@ -6,8 +6,13 @@ import androidx.room.PrimaryKey
 
 @Entity
 data class UserStats(
+    // User info
     @PrimaryKey(autoGenerate = true)
-    val userId : Int = 0,
+    val localId: Long = 0,
+    val name: String = "Guest",
+    val email: String? = null,
+    val firebaseId: String? = null,
+    val createdAt: Long = System.currentTimeMillis(),
 
     // Daily / Weekly / Monthly data
     @ColumnInfo(name = "todayCups")

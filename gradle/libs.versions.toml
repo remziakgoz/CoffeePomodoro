@@ -21,6 +21,7 @@ hiltNavigationCompose = "1.2.0"
 playServicesAuth = "21.0.0"
 room = "2.7.2"
 ksp = "2.1.0-1.0.29"
+firebaseFirestoreKtx = "26.0.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -50,6 +51,7 @@ navigation-compose = { group = "androidx.navigation", name = "navigation-compose
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "fireBaseBom" }
 firebase-analytics-ktx = { group = "com.google.firebase", name = "firebase-analytics-ktx" }
 firebase-auth-ktx = { group = "com.google.firebase", name = "firebase-auth-ktx" }
+firebase-firestore-ktx = { group = "com.google.firebase", name = "firebase-firestore-ktx" }
 credentials = { module = "androidx.credentials:credentials", version.ref = "credentials" }
 credentials-play-services-auth = { module = "androidx.credentials:credentials-play-services-auth", version.ref = "credentials"}
 googleid = { module = "com.google.android.libraries.identity.googleid:googleid", version.ref = "googleid"}

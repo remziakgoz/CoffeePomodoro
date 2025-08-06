@@ -50,6 +50,7 @@ import com.remziakgoz.coffeepomodoro.presentation.components.NextStepButton
 import com.remziakgoz.coffeepomodoro.presentation.components.PomodoroWithCanvasClock
 import com.remziakgoz.coffeepomodoro.presentation.components.RestartButton
 import com.remziakgoz.coffeepomodoro.presentation.components.StartButton
+import com.remziakgoz.coffeepomodoro.presentation.init.AppInitViewModel
 import com.remziakgoz.coffeepomodoro.presentation.pomodoro.PomodoroState
 import com.remziakgoz.coffeepomodoro.presentation.pomodoro.PomodoroViewModel
 
@@ -59,11 +60,16 @@ fun PomodoroScreen(
     innerPadding: PaddingValues,
     onNavigateToProfile: () -> Unit = {},
     onSwipeToDashboard: () -> Unit,
-    viewModel: PomodoroViewModel = hiltViewModel()
+    viewModel: PomodoroViewModel = hiltViewModel(),
+    appInitViewModel: AppInitViewModel = hiltViewModel()
 ) {
     val uiState = viewModel.uiState.collectAsState()
     var showResetDialog by remember { mutableStateOf(false) }
     var restartCounter by remember { mutableIntStateOf(0) }
+
+    LaunchedEffect(Unit) {
+        appInitViewModel.syncEverything()
+    }
 
     // Initialize screen state when screen opens
     LaunchedEffect(Unit) {

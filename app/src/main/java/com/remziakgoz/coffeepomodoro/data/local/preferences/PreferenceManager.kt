@@ -7,6 +7,8 @@ import javax.inject.Inject
 class PreferenceManager @Inject constructor(
     private val sharedPreferences: SharedPreferences
 ) {
+
+    // Cycle Count
     fun saveCycleCount(count: Int) {
         sharedPreferences.edit { putInt("cycle_count", count) }
     }
@@ -25,5 +27,14 @@ class PreferenceManager @Inject constructor(
 
     fun clearDailyValue() {
         sharedPreferences.edit{ putInt("cycle_count",0) }
+    }
+
+    //User Settings
+    fun saveCurrentUserLocalId(id: Long) {
+        sharedPreferences.edit{ putLong("current_user_local_id", id)}
+    }
+
+    fun getCurrentUserLocalId(): Long {
+        return sharedPreferences.getLong("current_user_local_id", -1L)
     }
 }

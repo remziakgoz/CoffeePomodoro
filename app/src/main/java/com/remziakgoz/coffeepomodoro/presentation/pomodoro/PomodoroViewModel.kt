@@ -34,9 +34,9 @@ class PomodoroViewModel @Inject constructor(
 
     // Call this when screen is opened to initialize proper state
     fun initializeScreenState() {
-        when (val result = resetCycleCountIfNeededUseCase()) {
+        when (resetCycleCountIfNeededUseCase()) {
             is ResetResult.ResetDone -> {
-                _uiState.value.copy(cycleCount = 0)
+               _uiState.value = _uiState.value.copy(cycleCount = 0)
             }
             is ResetResult.NoResetNeeded -> {
 
