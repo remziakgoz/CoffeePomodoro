@@ -44,6 +44,10 @@ android {
     buildFeatures {
         compose = true
     }
+
+    ksp{
+        arg("room.schemaLocation", "$projectDir/schemas")
+    }
 }
 
 dependencies {
@@ -72,6 +76,7 @@ dependencies {
     implementation(libs.google.auth)
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
+    implementation(libs.firebase.firestore.ktx)
     ksp(libs.room.compiler)
     ksp(libs.dagger.hilt.android.compiler)
     testImplementation(libs.junit)

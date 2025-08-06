@@ -1,4 +1,4 @@
-package com.remziakgoz.coffeepomodoro.data.roomdb
+package com.remziakgoz.coffeepomodoro.data.local.roomdb
 
 import androidx.room.Dao
 import androidx.room.Delete
@@ -7,15 +7,16 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.remziakgoz.coffeepomodoro.domain.model.UserStats
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface UserStatsDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertOrUpdate(userStats: UserStats)
+    suspend fun insertOrUpdate(userStats: UserStats): Long
 
-    @Query("SELECT * FROM UserStats WHERE userId = :userId LIMIT 1")
-    suspend fun getUserStats(userId: Int): UserStats?
+    @Query("SELECT * FROM UserStats WHERE localId = :localId LIMIT 1")
+    fun getUserStats(localId: Long): Flow<UserStats>
 
     @Update
     suspend fun updateUserStats(userStats: UserStats)

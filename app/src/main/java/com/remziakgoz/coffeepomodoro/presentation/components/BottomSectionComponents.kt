@@ -20,7 +20,8 @@ import androidx.compose.ui.text.TextStyle
 // 1. Achievement Badges Section (Responsive)
 @Composable
 fun AchievementSection(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    progress: Int = 0
 ) {
     Column(
         modifier = modifier
@@ -228,7 +229,8 @@ fun CoffeeTipSection(
 // 3. Quick Stats Section
 @Composable
 fun QuickStatsSection(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    progress: Int
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
