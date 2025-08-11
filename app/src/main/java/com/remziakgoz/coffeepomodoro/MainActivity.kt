@@ -22,6 +22,7 @@ import com.remziakgoz.coffeepomodoro.presentation.pomodoro.views.PomodoroScreen
 import com.remziakgoz.coffeepomodoro.presentation.ui.theme.CoffePomodroTheme
 import androidx.core.content.edit
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.remziakgoz.coffeepomodoro.presentation.dashboard.DashboardViewModel
 import com.remziakgoz.coffeepomodoro.presentation.dashboard.views.DashboardScreen
 import com.remziakgoz.coffeepomodoro.presentation.pomodoro.PomodoroViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -115,10 +116,10 @@ class MainActivity : ComponentActivity() {
                             val parentEntry = remember(navController.currentBackStackEntry) {
                                 navController.getBackStackEntry("root")
                             }
-                            val viewModel: PomodoroViewModel = hiltViewModel(parentEntry)
+                            val dashboardViewModel: DashboardViewModel = hiltViewModel(parentEntry)
                             DashboardScreen(
                                 modifier = Modifier,
-                                viewModel = viewModel,
+                                dashboardViewModel = dashboardViewModel,
                                 onSwipeToPomodoroScreen = {
                                     navController.navigate("pomodoro") {
                                         popUpTo("pomodoro") { inclusive = true}

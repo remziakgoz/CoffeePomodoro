@@ -6,5 +6,6 @@ data class UserStatsUseCases (
     val initializeLocalUserUseCase: InitializeLocalUserUseCase,
     val syncFirebaseUser: SyncFirebaseUserUseCase,
     val backupUserStats: BackupUserStatsUseCase,
-    val restoreUserStats: RestoreUserStatsUseCase
+    val restoreUserStats: RestoreUserStatsUseCase,
+    val ensureDateWindowsUseCase: EnsureDateWindowsUseCase
 )

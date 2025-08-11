@@ -1,9 +1,6 @@
 package com.remziakgoz.coffeepomodoro.presentation.dashboard.views
 
-import android.text.Layout
-import android.widget.Space
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -40,24 +37,22 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.remziakgoz.coffeepomodoro.R
-import com.remziakgoz.coffeepomodoro.presentation.components.CoffeeProgressCard
-import com.remziakgoz.coffeepomodoro.presentation.components.CompactWeeklyProgress
 import com.remziakgoz.coffeepomodoro.presentation.components.AchievementSection
+import com.remziakgoz.coffeepomodoro.presentation.components.CoffeeProgressCard
 import com.remziakgoz.coffeepomodoro.presentation.components.CoffeeTipSection
+import com.remziakgoz.coffeepomodoro.presentation.components.CompactWeeklyProgress
 import com.remziakgoz.coffeepomodoro.presentation.components.QuickStatsSection
-import com.remziakgoz.coffeepomodoro.presentation.pomodoro.PomodoroViewModel
+import com.remziakgoz.coffeepomodoro.presentation.dashboard.DashboardViewModel
 
 @Composable
 fun DashboardScreen(
     modifier: Modifier = Modifier,
     onSwipeToPomodoroScreen: () -> Unit,
-    viewModel: PomodoroViewModel = hiltViewModel()
+    dashboardViewModel: DashboardViewModel = hiltViewModel()
 ) {
 
     val successText by remember { mutableStateOf("Espresso Master\nCups Drank") }
-    val uiState by viewModel.uiState.collectAsState()
-    val cycleCount = uiState.cycleCount
-
+    val uiState by dashboardViewModel.uiState.collectAsState()
 
     Box(
         modifier = modifier
@@ -148,19 +143,19 @@ fun DashboardScreen(
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
                         CoffeeProgressCard(
-                            counter = cycleCount,
+                            counter = uiState.stats.todayCups,
                             imageId = R.drawable.cup1fordb,
                             dayProgress = "Today"
                         )
                         Spacer(modifier = modifier.size(8.dp))
                         CoffeeProgressCard(
-                            counter = cycleCount,
+                            counter = uiState.stats.weeklyCups,
                             imageId = R.drawable.cup7fordb,
                             dayProgress = "Week"
                         )
                         Spacer(modifier = modifier.size(8.dp))
                         CoffeeProgressCard(
-                            counter = cycleCount,
+                            counter = uiState.stats.monthlyCups,
                             imageId = R.drawable.cupcorefordb2,
                             dayProgress = "Month"
                         )
@@ -170,7 +165,7 @@ fun DashboardScreen(
 
                 // Modern Weekly Progress Report
                 CompactWeeklyProgress(
-                    progress = cycleCount,
+                    progress = uiState.stats.weeklyCups,
                     goal = 35,
                     dailyData = listOf(3, 2, 4, 1, 5, 0, 0),
                     modifier = modifier.padding(horizontal = 16.dp)
@@ -183,7 +178,7 @@ fun DashboardScreen(
                 // Option 1: Achievement Badges
                 AchievementSection(
                     modifier = modifier.padding(horizontal = 16.dp),
-                    progress = cycleCount
+                    progress = 25
                 )
 
                 Spacer(modifier = modifier.size(8.dp))
@@ -191,7 +186,7 @@ fun DashboardScreen(
                 // Option 2: Quick Stats
                 QuickStatsSection(
                     modifier = modifier.padding(horizontal = 16.dp),
-                    progress = cycleCount
+                    progress = 45
                 )
 
                 Spacer(modifier = modifier.size(8.dp))

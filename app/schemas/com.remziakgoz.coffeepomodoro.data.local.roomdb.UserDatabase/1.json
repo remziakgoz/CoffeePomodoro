@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "e359f087c9439647a573e917cf50cdeb",
+    "identityHash": "cda6dc4c606d1d7e604049e1c723efeb",
     "entities": [
       {
         "tableName": "UserStats",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`localId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `email` TEXT, `firebaseId` TEXT, `createdAt` INTEGER NOT NULL, `todayCups` INTEGER NOT NULL, `weeklyCups` INTEGER NOT NULL, `monthlyCups` INTEGER NOT NULL, `weeklyGoal` INTEGER NOT NULL, `bestStreak` INTEGER NOT NULL, `currentStreak` INTEGER NOT NULL, `dailyData` TEXT NOT NULL, `goldReached` INTEGER NOT NULL, `threeDayStreak` INTEGER NOT NULL, `morningStar` INTEGER NOT NULL, `consistency` INTEGER NOT NULL, `dailyAverage` REAL NOT NULL, `totalDays` INTEGER NOT NULL, `totalCups` INTEGER NOT NULL, `lastUpdated` INTEGER NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`localId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `email` TEXT, `firebaseId` TEXT, `createdAt` INTEGER NOT NULL, `todayCups` INTEGER NOT NULL, `weeklyCups` INTEGER NOT NULL, `monthlyCups` INTEGER NOT NULL, `todayDate` TEXT NOT NULL, `currentWeekStart` TEXT NOT NULL, `currentMonth` TEXT NOT NULL, `weeklyGoal` INTEGER NOT NULL, `bestStreak` INTEGER NOT NULL, `currentStreak` INTEGER NOT NULL, `dailyData` TEXT NOT NULL, `goldReached` INTEGER NOT NULL, `threeDayStreak` INTEGER NOT NULL, `morningStar` INTEGER NOT NULL, `consistency` INTEGER NOT NULL, `dailyAverage` REAL NOT NULL, `totalDays` INTEGER NOT NULL, `totalCups` INTEGER NOT NULL, `lastUpdated` INTEGER NOT NULL)",
         "fields": [
           {
             "fieldPath": "localId",
@@ -52,6 +52,24 @@
             "fieldPath": "monthlyCups",
             "columnName": "monthlyCups",
             "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "todayDate",
+            "columnName": "todayDate",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "currentWeekStart",
+            "columnName": "currentWeekStart",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "currentMonth",
+            "columnName": "currentMonth",
+            "affinity": "TEXT",
             "notNull": true
           },
           {
@@ -137,7 +155,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'e359f087c9439647a573e917cf50cdeb')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'cda6dc4c606d1d7e604049e1c723efeb')"
     ]
   }
 }

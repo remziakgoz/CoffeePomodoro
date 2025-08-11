@@ -22,6 +22,14 @@ data class UserStats(
     @ColumnInfo(name = "monthlyCups")
     val monthlyCups: Int = 0,
 
+    // Daily / Weekly / Monthly date
+    @ColumnInfo(name = "todayDate")
+    val todayDate: String = "",
+    @ColumnInfo(name = "currentWeekStart")
+    val currentWeekStart: String = "",
+    @ColumnInfo(name = "currentMonth")
+    val currentMonth: String = "",
+
     // Goals & progress
     @ColumnInfo(name = "weeklyGoal")
     val weeklyGoal: Int = 35,
