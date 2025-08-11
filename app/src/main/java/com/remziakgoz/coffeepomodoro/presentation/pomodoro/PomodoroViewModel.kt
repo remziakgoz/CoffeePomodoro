@@ -1,24 +1,31 @@
 package com.remziakgoz.coffeepomodoro.presentation.pomodoro
 
-import android.content.SharedPreferences
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.remziakgoz.coffeepomodoro.data.local.preferences.PreferenceManager
 import com.remziakgoz.coffeepomodoro.domain.model.ResetResult
+import com.remziakgoz.coffeepomodoro.domain.model.UserStats
 import com.remziakgoz.coffeepomodoro.domain.use_cases.ResetCycleCountIfNeededUseCase
+import com.remziakgoz.coffeepomodoro.domain.use_cases.UserStatsUseCases
+import com.remziakgoz.coffeepomodoro.utils.getCurrentDateString
+import com.remziakgoz.coffeepomodoro.utils.getCurrentMonthString
+import com.remziakgoz.coffeepomodoro.utils.getMondayOfCurrentWeek
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class PomodoroViewModel @Inject constructor(
     private val preferenceManager: PreferenceManager,
-    private val resetCycleCountIfNeededUseCase: ResetCycleCountIfNeededUseCase
+    private val resetCycleCountIfNeededUseCase: ResetCycleCountIfNeededUseCase,
+    private val userStatsUseCases: UserStatsUseCases
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(PomodoroUiState(
@@ -329,7 +336,7 @@ class PomodoroViewModel @Inject constructor(
                     )
                 }
             }
-            PomodoroState.ShortBreak -> {
+            PomodoroState.ShortBreak, PomodoroState.LongBreak -> {
                 // Increment cycle count AFTER completing break
                 val newCount = _uiState.value.cycleCount + 1
                 _uiState.value = _uiState.value.copy(
@@ -342,20 +349,12 @@ class PomodoroViewModel @Inject constructor(
                     cycleCount = newCount
                 )
                 preferenceManager.saveCycleCount(newCount)
-            }
-            PomodoroState.LongBreak -> {
-                // Increment cycle count AFTER completing long break
-                val newCount = _uiState.value.cycleCount + 1
-                _uiState.value = _uiState.value.copy(
-                    isRunning = false,
-                    currentState = PomodoroState.Ready,
-                    remainingTime = pomodoroTime,
-                    animationProgress = 1f,
-                    pausedTime = 0L,
-                    pausedTimeReverse = 0L,
-                    cycleCount = newCount
-                )
-                preferenceManager.saveCycleCount(newCount)
+
+                val localId = preferenceManager.getCurrentUserLocalId()
+                viewModelScope.launch {
+                    val stats = userStatsUseCases.getUserStats(localId).first()
+                    updateDrinkStatsOnCycleComplete(stats)
+                }
             }
             else -> {}
         }
@@ -437,6 +436,13 @@ class PomodoroViewModel @Inject constructor(
                     cycleCount = newCount
                 )
                 preferenceManager.saveCycleCount(newCount)
+
+                val localId = preferenceManager.getCurrentUserLocalId()
+                viewModelScope.launch {
+                    userStatsUseCases.getUserStats(localId).firstOrNull()?.let { stats ->
+                        updateDrinkStatsOnCycleComplete(stats)
+                    }
+                }
             }
             PomodoroState.LongBreak -> {
                 // From LongBreak, go to next pomodoro and increment cycle count
@@ -451,6 +457,13 @@ class PomodoroViewModel @Inject constructor(
                     cycleCount = newCount
                 )
                 preferenceManager.saveCycleCount(newCount)
+
+                val localId = preferenceManager.getCurrentUserLocalId()
+                viewModelScope.launch {
+                    userStatsUseCases.getUserStats(localId).firstOrNull()?.let { stats ->
+                        updateDrinkStatsOnCycleComplete(stats)
+                    }
+                }
             }
         }
     }
@@ -461,54 +474,43 @@ class PomodoroViewModel @Inject constructor(
         animationJob?.cancel()
         
         // Reset current session based on state, but keep cycle count
-        when (_uiState.value.currentState) {
-            PomodoroState.Work, PomodoroState.Paused -> {
-                // Reset to work state with full pomodoro time
-                _uiState.value = _uiState.value.copy(
-                    currentState = PomodoroState.Ready,
-                    remainingTime = pomodoroTime,
-                    isRunning = false,
-                    animationProgress = 1f,
-                    pausedTime = 0L,
-                    pausedTimeReverse = 0L
-                    // Keep cycleCount unchanged
-                )
+        val current = _uiState.value.currentState
+
+        val (targetState, targetTime, targetAnim) = when (current) {
+            PomodoroState.Work, PomodoroState.Paused, PomodoroState.Ready -> {
+                Triple(PomodoroState.Ready, pomodoroTime, 1f)
             }
-            PomodoroState.ShortBreak -> {
-                // Reset to short break with full break time
-                _uiState.value = _uiState.value.copy(
-                    currentState = PomodoroState.ShortBreak,
-                    remainingTime = breakTime,
-                    isRunning = false,
-                    animationProgress = 0f,
-                    pausedTime = 0L,
-                    pausedTimeReverse = 0L
-                    // Keep cycleCount unchanged
-                )
-            }
-            PomodoroState.LongBreak -> {
-                // Reset to long break with full break time
-                _uiState.value = _uiState.value.copy(
-                    currentState = PomodoroState.LongBreak,
-                    remainingTime = longBreakTime,
-                    isRunning = false,
-                    animationProgress = 0f,
-                    pausedTime = 0L,
-                    pausedTimeReverse = 0L
-                    // Keep cycleCount unchanged
-                )
-            }
-            PomodoroState.Ready -> {
-                // Already in ready state, just ensure everything is reset
-                _uiState.value = _uiState.value.copy(
-                    remainingTime = pomodoroTime,
-                    isRunning = false,
-                    animationProgress = 1f,
-                    pausedTime = 0L,
-                    pausedTimeReverse = 0L
-                    // Keep cycleCount unchanged
-                )
-            }
+            PomodoroState.ShortBreak -> Triple(PomodoroState.ShortBreak, breakTime, 0f)
+            PomodoroState.LongBreak -> Triple(PomodoroState.LongBreak, longBreakTime, 0f)
+        }
+
+        _uiState.value = _uiState.value.copy(
+            currentState = targetState,
+            remainingTime = targetTime,
+            isRunning = false,
+            animationProgress = targetAnim,
+            pausedTime = 0L,
+            pausedTimeReverse = 0L
+        )
+    }
+
+    private fun updateDrinkStatsOnCycleComplete(currentStats: UserStats) {
+        val today = getCurrentDateString()
+        val monday = getMondayOfCurrentWeek()
+        val month = getCurrentMonthString()
+
+        val updatedStats = currentStats.copy(
+            todayCups = if (today == currentStats.todayDate) currentStats.todayCups + 1 else 1,
+            todayDate = today,
+
+            weeklyCups = if (monday == currentStats.currentWeekStart) currentStats.weeklyCups + 1 else 1,
+            currentWeekStart = monday,
+
+            monthlyCups = if (month == currentStats.currentMonth) currentStats.monthlyCups + 1 else 1,
+            currentMonth = month
+        )
+        viewModelScope.launch {
+            userStatsUseCases.updateUserStats(updatedStats)
         }
     }
 

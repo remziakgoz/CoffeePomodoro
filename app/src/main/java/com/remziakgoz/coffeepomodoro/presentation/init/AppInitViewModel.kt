@@ -10,13 +10,15 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AppInitViewModel @Inject constructor(
-    private val dataSyncManager: DataSyncManager
+    private val dataSyncManager: DataSyncManager,
+    private val userStatsUseCases: UserStatsUseCases
 ) : ViewModel() {
 
 
     fun syncEverything() {
         viewModelScope.launch {
             dataSyncManager.performInitialSync()
+            userStatsUseCases.ensureDateWindowsUseCase()
         }
     }
 }

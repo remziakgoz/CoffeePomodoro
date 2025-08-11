@@ -16,6 +16,7 @@ import com.remziakgoz.coffeepomodoro.data.repository.UserStatsRepositoryImpl
 import com.remziakgoz.coffeepomodoro.data.sync.DataSyncManager
 import com.remziakgoz.coffeepomodoro.domain.repository.UserStatsRepository
 import com.remziakgoz.coffeepomodoro.domain.use_cases.BackupUserStatsUseCase
+import com.remziakgoz.coffeepomodoro.domain.use_cases.EnsureDateWindowsUseCase
 import com.remziakgoz.coffeepomodoro.domain.use_cases.GetUserStatsUseCase
 import com.remziakgoz.coffeepomodoro.domain.use_cases.InitializeLocalUserUseCase
 import com.remziakgoz.coffeepomodoro.domain.use_cases.RestoreUserStatsUseCase
@@ -84,7 +85,8 @@ object AppModule {
         preferenceManager: PreferenceManager,
         firebaseAuth: FirebaseAuth,
         backupUserStatsUseCase: BackupUserStatsUseCase,
-        firebaseUserStatsService: FirebaseUserStatsService
+        firebaseUserStatsService: FirebaseUserStatsService,
+        ensureDateWindowsUseCase: EnsureDateWindowsUseCase
     ): UserStatsUseCases {
         return UserStatsUseCases(
             getUserStats = GetUserStatsUseCase(repository),
@@ -92,7 +94,13 @@ object AppModule {
             initializeLocalUserUseCase = InitializeLocalUserUseCase(preferenceManager, repository),
             syncFirebaseUser = SyncFirebaseUserUseCase(firebaseAuth, preferenceManager, repository),
             backupUserStats = backupUserStatsUseCase,
-            restoreUserStats = RestoreUserStatsUseCase(firebaseAuth,repository,preferenceManager,firebaseUserStatsService)
+            restoreUserStats = RestoreUserStatsUseCase(
+                firebaseAuth,
+                repository,
+                preferenceManager,
+                firebaseUserStatsService
+            ),
+            ensureDateWindowsUseCase = ensureDateWindowsUseCase
         )
     }
 
@@ -111,7 +119,7 @@ object AppModule {
         auth: FirebaseAuth,
         preferenceManager: PreferenceManager,
         userStatsUseCases: UserStatsUseCases,
-    ) : DataSyncManager {
+    ): DataSyncManager {
         return DataSyncManager(auth, preferenceManager, userStatsUseCases)
     }
 
