@@ -8,6 +8,7 @@ import com.remziakgoz.coffeepomodoro.domain.model.UserStats
 import com.remziakgoz.coffeepomodoro.domain.use_cases.ResetCycleCountIfNeededUseCase
 import com.remziakgoz.coffeepomodoro.domain.use_cases.UserStatsUseCases
 import com.remziakgoz.coffeepomodoro.utils.getCurrentDateString
+import com.remziakgoz.coffeepomodoro.utils.getCurrentDayIndex
 import com.remziakgoz.coffeepomodoro.utils.getCurrentMonthString
 import com.remziakgoz.coffeepomodoro.utils.getMondayOfCurrentWeek
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,6 +20,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
+import java.util.Calendar
 import javax.inject.Inject
 
 @HiltViewModel
@@ -32,7 +34,7 @@ class PomodoroViewModel @Inject constructor(
         cycleCount = preferenceManager.getCycleCount()
     ))
     val uiState: StateFlow<PomodoroUiState> = _uiState.asStateFlow()
-    
+
     private var timerJob: Job? = null
     private var animationJob: Job? = null
     private val pomodoroTime = 12 * 1000L // 25 minutes
@@ -248,16 +250,16 @@ class PomodoroViewModel @Inject constructor(
     private fun startForwardAnimation() {
         animationJob = viewModelScope.launch {
             val startTime = System.nanoTime() - (_uiState.value.pausedTime * 1_000_000L)
-            
+
             while (_uiState.value.isRunning && _uiState.value.animationProgress > 0f) {
                 val currentTime = System.nanoTime()
                 val elapsed = (currentTime - startTime) / 1_000_000L // Convert to milliseconds
                 val progress = 1f - (elapsed.toFloat() / pomodoroTime)
-                
+
                 _uiState.value = _uiState.value.copy(
                     animationProgress = progress.coerceIn(0f, 1f)
                 )
-                
+
                 if (progress <= 0f) {
                     break
                 }
@@ -269,16 +271,16 @@ class PomodoroViewModel @Inject constructor(
     private fun startReverseAnimation(duration: Long) {
         animationJob = viewModelScope.launch {
             val startTime = System.nanoTime() - (_uiState.value.pausedTimeReverse * 1_000_000L)
-            
+
             while (_uiState.value.isRunning && _uiState.value.animationProgress < 1f) {
                 val currentTime = System.nanoTime()
                 val elapsed = (currentTime - startTime) / 1_000_000L // Convert to milliseconds
                 val progress = elapsed.toFloat() / duration
-                
+
                 _uiState.value = _uiState.value.copy(
                     animationProgress = progress.coerceIn(0f, 1f)
                 )
-                
+
                 if (progress >= 1f) {
                     break
                 }
@@ -292,11 +294,11 @@ class PomodoroViewModel @Inject constructor(
             while (_uiState.value.remainingTime > 0 && _uiState.value.isRunning) {
                 delay(1000)
                 val newTime = _uiState.value.remainingTime - 1000
-                
+
                 _uiState.value = _uiState.value.copy(
                     remainingTime = newTime
                 )
-                
+
                 if (newTime <= 0) {
                     completeCurrentSession()
                     break
@@ -311,7 +313,7 @@ class PomodoroViewModel @Inject constructor(
             PomodoroState.Work -> {
                 // After work, determine break type based on CURRENT cycle count
                 val currentCycleCount = _uiState.value.cycleCount
-                
+
                 if ((currentCycleCount + 1) % 4 == 0) {
                     // Every 4 cycles, long break time! (4, 8, 12, 16...)
                     _uiState.value = _uiState.value.copy(
@@ -364,13 +366,13 @@ class PomodoroViewModel @Inject constructor(
         // Cancel any running timers and animations
         timerJob?.cancel()
         animationJob?.cancel()
-        
+
         // Move to next step regardless of timer state
         when (_uiState.value.currentState) {
             PomodoroState.Ready -> {
                 // From Ready, determine break type based on current cycle count
                 val currentCycleCount = _uiState.value.cycleCount
-                
+
                 if ((currentCycleCount + 1) % 4 == 0) {
                     // Go to long break
                     _uiState.value = _uiState.value.copy(
@@ -398,7 +400,7 @@ class PomodoroViewModel @Inject constructor(
             PomodoroState.Work, PomodoroState.Paused -> {
                 // From Work/Paused, go to appropriate break based on current cycle count
                 val currentCycleCount = _uiState.value.cycleCount
-                
+
                 if ((currentCycleCount + 1) % 4 == 0) {
                     // Go to long break
                     _uiState.value = _uiState.value.copy(
@@ -472,7 +474,7 @@ class PomodoroViewModel @Inject constructor(
         // Cancel any running timers and animations
         timerJob?.cancel()
         animationJob?.cancel()
-        
+
         // Reset current session based on state, but keep cycle count
         val current = _uiState.value.currentState
 
@@ -495,30 +497,71 @@ class PomodoroViewModel @Inject constructor(
     }
 
     private fun updateDrinkStatsOnCycleComplete(currentStats: UserStats) {
+        val now = System.currentTimeMillis()
+        val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+
         val today = getCurrentDateString()
         val monday = getMondayOfCurrentWeek()
         val month = getCurrentMonthString()
 
-        val updatedStats = currentStats.copy(
-            todayCups = if (today == currentStats.todayDate) currentStats.todayCups + 1 else 1,
+        val sameDay   = (today == currentStats.todayDate)
+        val sameWeek  = (monday == currentStats.currentWeekStart)
+        val sameMonth = (month == currentStats.currentMonth)
+
+        val idx = getCurrentDayIndex()
+
+        val baseDaily = if (currentStats.dailyData.size == 7) currentStats.dailyData else List(7) { 0 }
+        val newDaily = when {
+            !sameWeek -> MutableList(7) { 0 }.apply { this[idx] = 1 }
+            !sameDay  -> baseDaily.toMutableList().apply { this[idx] = 1 }
+            else      -> baseDaily.toMutableList().apply { this[idx] = this[idx] + 1}
+        }
+
+        val newToday = if (sameDay) currentStats.todayCups + 1 else 1
+        val newCurrentStreak = if(!sameDay) {
+            if (currentStats.todayCups > 0) currentStats.currentStreak + 1 else 0
+        } else {
+            currentStats.currentStreak
+        }
+        val newBestStreak = maxOf(currentStats.bestStreak, newCurrentStreak)
+
+        val morningStar = when {
+            !sameDay -> false
+            newToday == 1 && hour < 10 -> true
+            else -> currentStats.morningStar
+        }
+
+
+        val updated = currentStats.copy(
+            todayCups = newToday,
             todayDate = today,
 
-            weeklyCups = if (monday == currentStats.currentWeekStart) currentStats.weeklyCups + 1 else 1,
+            weeklyCups = if (sameWeek) currentStats.weeklyCups + 1 else 1,
             currentWeekStart = monday,
 
-            monthlyCups = if (month == currentStats.currentMonth) currentStats.monthlyCups + 1 else 1,
-            currentMonth = month
+            monthlyCups = if (sameMonth) currentStats.monthlyCups + 1 else 1,
+            currentMonth = month,
+
+            dailyData = newDaily,
+
+            currentStreak = newCurrentStreak,
+            bestStreak = newBestStreak,
+
+            morningStar = morningStar,
+
+            totalCups = currentStats.totalCups + 1,
+            lastUpdated = now
         )
-        viewModelScope.launch {
-            userStatsUseCases.updateUserStats(updatedStats)
-        }
+
+        viewModelScope.launch { userStatsUseCases.updateUserStats(updated) }
+
     }
 
     fun resetEverything() {
         // Cancel any running timers and animations
         timerJob?.cancel()
         animationJob?.cancel()
-        
+
         // Reset everything to initial state
         preferenceManager.saveCycleCount(0)
         _uiState.value = PomodoroUiState()

@@ -16,11 +16,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.tooling.preview.Preview
+import com.remziakgoz.coffeepomodoro.domain.model.AchievementsUi
 
 // 1. Achievement Badges Section (Responsive)
 @Composable
 fun AchievementSection(
     modifier: Modifier = Modifier,
+    achievements: AchievementsUi,
     progress: Int = 0
 ) {
     Column(
@@ -59,22 +62,22 @@ fun AchievementSection(
             AchievementBadge(
                 icon = "🏆",
                 title = "Goal Reached",
-                isUnlocked = true
+                isUnlocked = achievements.goalReached
             )
             AchievementBadge(
                 icon = "🔥",
                 title = "3 Day Streak",
-                isUnlocked = true
+                isUnlocked = achievements.threeDayStreak
             )
             AchievementBadge(
                 icon = "⭐",
                 title = "Morning Star",
-                isUnlocked = false
+                isUnlocked = achievements.morningStar
             )
             AchievementBadge(
                 icon = "💪",
                 title = "Consistency",
-                isUnlocked = false
+                isUnlocked = achievements.consistency
             )
         }
     }
@@ -316,4 +319,8 @@ private fun QuickStatCard(
             )
         }
     }
-} 
+}
+@Preview(showBackground = true)
+@Composable
+fun Preview3() {
+}
