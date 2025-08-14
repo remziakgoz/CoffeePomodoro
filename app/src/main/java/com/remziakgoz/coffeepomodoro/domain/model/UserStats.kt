@@ -44,7 +44,7 @@ data class UserStats(
 
     // Achievements
     @ColumnInfo(name = "goldReached")
-    val goldReached: Boolean = false,
+    val goalReached: Boolean = false,
     @ColumnInfo(name = "threeDayStreak")
     val threeDayStreak: Boolean = false,
     @ColumnInfo(name = "morningStar")

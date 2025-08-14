@@ -3,6 +3,8 @@ package com.remziakgoz.coffeepomodoro.presentation.dashboard
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.remziakgoz.coffeepomodoro.data.local.preferences.PreferenceManager
+import com.remziakgoz.coffeepomodoro.domain.model.AchievementsUi
+import com.remziakgoz.coffeepomodoro.domain.model.UserStats
 import com.remziakgoz.coffeepomodoro.domain.use_cases.UserStatsUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,26 +33,34 @@ class DashboardViewModel @Inject constructor(
         }
         viewModelScope.launch {
            try {
-               userStatsUseCases.getUserStats(localId).collect { userStats ->
-
-                   val unlockedAchievements = mutableSetOf<String>()
-                   if (userStats.goldReached) unlockedAchievements.add("Gold Reached")
-                   if (userStats.threeDayStreak) unlockedAchievements.add("3-Day Streak")
-                   if (userStats.morningStar) unlockedAchievements.add("Morning Star")
-                   if (userStats.consistency) unlockedAchievements.add("Consistency")
-
-                   _uiState.value = DashboardUiState(
-                       stats = userStats,
-                       unlockedAchievements = unlockedAchievements
+               userStatsUseCases.getUserStats(localId).collect { stats ->
+                   _uiState.value = _uiState.value.copy(
+                       stats = stats,
+                       achievements = mapAchievements(stats),
+                       isLoading = false,
+                       isErrorMessage = null
                    )
                }
-
            } catch (e: Exception) {
-               _uiState.value = DashboardUiState(
-                   isErrorMessage = e.message ?: "An unexpected error occurred"
+               _uiState.value = _uiState.value.copy(
+                   isErrorMessage = e.message ?: "An unexpected error occurred",
+                   isLoading = false
                )
            }
         }
+    }
+
+    private fun mapAchievements(stats: UserStats): AchievementsUi {
+        val goalReached   = stats.weeklyCups >= stats.weeklyGoal
+        val threeStreak   = stats.currentStreak >= 3
+        val consistency   = stats.dailyData.count { it > 0 } >= 5
+        val morningStar   = stats.morningStar
+        return AchievementsUi(
+            goalReached = goalReached,
+            threeDayStreak = threeStreak,
+            morningStar = morningStar,
+            consistency = consistency
+        )
     }
     
 }

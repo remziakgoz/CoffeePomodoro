@@ -29,17 +29,22 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 // Compact version optimized for dark background
 @Composable
 fun CompactWeeklyProgress(
-    progress: Int = 15,
+    progress: Int = 0,
     goal: Int = 35,
-    dailyData: List<Int> = listOf(3, 2, 4, 1, 5, 0, 0),
+    dailyData: List<Int> = emptyList(),
     modifier: Modifier = Modifier
 ) {
+    val safeGoal = goal.coerceAtLeast(1)
+    val ratio = (progress.toFloat() / safeGoal).coerceIn(0f, 1f)
+    val safeDaily = dailyData.takeIf { it.size == 7 } ?: List(7) { 0 }
+
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -63,17 +68,18 @@ fun CompactWeeklyProgress(
         ) {
             CompactCircularProgress(
                 progress = progress,
-                goal = goal
+                goal = safeGoal,
+                ratioOverride = ratio
             )
             
             WeeklyStatsColumn(
                 progress = progress,
-                goal = goal
+                goal = safeGoal
             )
         }
         
         // Compact Daily Dots
-        CompactDailyDots(dailyData = dailyData)
+        CompactDailyDots(dailyData = safeDaily)
     }
 }
 
@@ -81,10 +87,12 @@ fun CompactWeeklyProgress(
 private fun CompactCircularProgress(
     progress: Int,
     goal: Int,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    ratioOverride: Float? = null
 ) {
+    val target = ratioOverride ?: (progress.toFloat() / goal).coerceIn(0f, 1f)
     val animatedProgress by animateFloatAsState(
-        targetValue = progress.toFloat() / goal,
+        targetValue = target,
         animationSpec = tween(durationMillis = 1000, easing = EaseOutCubic),
         label = "compact_progress"
     )
@@ -165,8 +173,8 @@ private fun WeeklyStatsColumn(
     goal: Int,
     modifier: Modifier = Modifier
 ) {
-    val percentage = ((progress.toFloat() / goal) * 100).toInt()
-    val remaining = goal - progress
+    val percentage = ((progress * 100f) / goal).toInt().coerceIn(0, 100)
+    val remaining = (goal - progress).coerceAtLeast(0)
     
     Column(
         modifier = modifier,
@@ -219,7 +227,8 @@ private fun CompactDailyDots(
     modifier: Modifier = Modifier
 ) {
     val days = listOf("M", "T", "W", "T", "F", "S", "S")
-    
+    val safeDaily = if (dailyData.size == 7) dailyData else List(7) { 0 }
+
     Column(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -242,7 +251,7 @@ private fun CompactDailyDots(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            dailyData.forEachIndexed { index, cups ->
+            safeDaily.forEachIndexed { index, cups ->
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -270,9 +279,9 @@ private fun CompactDailyDots(
                             )
                         }
                     }
-                    
+
                     Text(
-                        text = days[index],
+                        text = days.getOrElse(index) { "N/A" },
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White,
@@ -288,4 +297,10 @@ private fun CompactDailyDots(
             }
         }
     }
-} 
+}
+
+@Preview(showBackground = true)
+@Composable
+fun Preview2(modifier: Modifier = Modifier) {
+    CompactWeeklyProgress()
+}

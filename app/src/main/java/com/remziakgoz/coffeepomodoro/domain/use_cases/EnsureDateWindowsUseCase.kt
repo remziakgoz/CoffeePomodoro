@@ -3,6 +3,7 @@ package com.remziakgoz.coffeepomodoro.domain.use_cases
 import com.remziakgoz.coffeepomodoro.data.local.preferences.PreferenceManager
 import com.remziakgoz.coffeepomodoro.domain.repository.UserStatsRepository
 import com.remziakgoz.coffeepomodoro.utils.getCurrentDateString
+import com.remziakgoz.coffeepomodoro.utils.getCurrentDayIndex
 import com.remziakgoz.coffeepomodoro.utils.getCurrentMonthString
 import com.remziakgoz.coffeepomodoro.utils.getMondayOfCurrentWeek
 import kotlinx.coroutines.flow.firstOrNull
@@ -20,18 +21,47 @@ class EnsureDateWindowsUseCase @Inject constructor(
         val monday = getMondayOfCurrentWeek()
         val month = getCurrentMonthString()
 
+        val sameDay = (today == stats.todayDate)
+        val sameWeek = (monday == stats.currentWeekStart)
+        val sameMonth = (month == stats.currentMonth)
+
+        val todayIdx = getCurrentDayIndex()
+
+        val baseDaily = if (stats.dailyData.size == 7) stats.dailyData else List(7) { 0 }
+        val newDailyData: List<Int> = when {
+            !sameWeek -> List(7) { 0 }
+            !sameDay  -> baseDaily.toMutableList().apply { this[todayIdx] = 0 }
+            else      -> baseDaily
+        }
+
+        val newCurrentStreak = if (!sameDay) {
+            if (stats.todayCups > 0) stats.currentStreak + 1 else 0
+        } else {
+            stats.currentStreak
+        }
+        val newBestStreak = maxOf(stats.bestStreak, newCurrentStreak)
+
+        val newMorningStar = if (sameDay) stats.morningStar else false
+
         val updatedStats = stats.copy(
-            todayCups = if (today != stats.todayDate) 0 else stats.todayCups,
+            todayCups = if (sameDay) stats.todayCups else 0,
             todayDate = today,
-            weeklyCups = if (monday != stats.currentWeekStart) 0 else stats.weeklyCups,
+
+            weeklyCups = if (sameWeek) stats.weeklyCups else 0,
             currentWeekStart = monday,
-            monthlyCups = if (month != stats.currentMonth) 0 else stats.monthlyCups,
-            currentMonth = month
+
+            monthlyCups = if (sameMonth) stats.monthlyCups else 0,
+            currentMonth = month,
+
+            dailyData = newDailyData,
+
+            currentStreak = newCurrentStreak,
+            bestStreak = newBestStreak,
+            morningStar = newMorningStar
         )
 
         if (updatedStats != stats) {
             userStatsRepository.updateUserStats(updatedStats)
         }
     }
-
 }

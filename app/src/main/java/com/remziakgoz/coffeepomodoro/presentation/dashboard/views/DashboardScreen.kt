@@ -103,25 +103,6 @@ fun DashboardScreen(
                         )
 
                     }
-                    IconButton(
-                        onClick = { /*TODO*/ },
-                        modifier = modifier
-                            .size(64.dp)
-                            .align(Alignment.CenterEnd),
-                        colors = IconButtonDefaults.iconButtonColors(
-                            containerColor = Color.Transparent,
-                            contentColor = Color.White
-                        )
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Refresh,
-                            contentDescription = "Restart Dashboard Button",
-                            modifier = modifier
-                                .fillMaxSize(),
-                            tint = Color.White.copy(alpha = 0.8f),
-                        )
-                    }
-
                 }
 
                 Text(
@@ -166,8 +147,8 @@ fun DashboardScreen(
                 // Modern Weekly Progress Report
                 CompactWeeklyProgress(
                     progress = uiState.stats.weeklyCups,
-                    goal = 35,
-                    dailyData = listOf(3, 2, 4, 1, 5, 0, 0),
+                    goal = uiState.stats.weeklyGoal,
+                    dailyData = uiState.stats.dailyData,
                     modifier = modifier.padding(horizontal = 16.dp)
                 )
 
@@ -178,7 +159,8 @@ fun DashboardScreen(
                 // Option 1: Achievement Badges
                 AchievementSection(
                     modifier = modifier.padding(horizontal = 16.dp),
-                    progress = 25
+                    progress = 25,
+                    achievements = uiState.achievements
                 )
 
                 Spacer(modifier = modifier.size(8.dp))
