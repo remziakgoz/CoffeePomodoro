@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import com.remziakgoz.coffeepomodoro.domain.model.AchievementsUi
+import java.util.Locale
 
 // 1. Achievement Badges Section (Responsive)
 @Composable
@@ -233,7 +234,9 @@ fun CoffeeTipSection(
 @Composable
 fun QuickStatsSection(
     modifier: Modifier = Modifier,
-    progress: Int
+    dailyAvg: Float,
+    bestStreak: Int,
+    total: Int
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -241,19 +244,19 @@ fun QuickStatsSection(
     ) {
         QuickStatCard(
             title = "Daily Avg",
-            value = "4.2",
+            value = String.format(Locale.getDefault(),"%.1f", dailyAvg),
             unit = "cups",
             modifier = Modifier.weight(1f)
         )
         QuickStatCard(
             title = "Best Streak",
-            value = "12",
+            value = bestStreak.toString(),
             unit = "days",
             modifier = Modifier.weight(1f)
         )
         QuickStatCard(
             title = "Total",
-            value = "347",
+            value = total.toString(),
             unit = "cups",
             modifier = Modifier.weight(1f)
         )
@@ -323,4 +326,5 @@ private fun QuickStatCard(
 @Preview(showBackground = true)
 @Composable
 fun Preview3() {
+    QuickStatCard("20","20","20",)
 }

@@ -43,6 +43,9 @@ class EnsureDateWindowsUseCase @Inject constructor(
 
         val newMorningStar = if (sameDay) stats.morningStar else false
 
+        val incTotalDays = if (!sameDay && stats.todayCups > 0) stats.totalDays + 1 else stats.totalDays
+        val newDailyAverage = if (incTotalDays > 0) stats.totalCups.toFloat() / incTotalDays else 0f
+
         val updatedStats = stats.copy(
             todayCups = if (sameDay) stats.todayCups else 0,
             todayDate = today,
@@ -57,7 +60,10 @@ class EnsureDateWindowsUseCase @Inject constructor(
 
             currentStreak = newCurrentStreak,
             bestStreak = newBestStreak,
-            morningStar = newMorningStar
+            morningStar = newMorningStar,
+
+            totalDays = incTotalDays,
+            dailyAverage = newDailyAverage
         )
 
         if (updatedStats != stats) {
