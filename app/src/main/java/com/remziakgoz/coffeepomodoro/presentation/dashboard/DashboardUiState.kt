@@ -7,5 +7,6 @@ data class DashboardUiState(
     val stats: UserStats = UserStats(),
     val isLoading: Boolean = false,
     val isErrorMessage: String? = null,
-    val achievements: AchievementsUi = AchievementsUi()
+    val achievements: AchievementsUi = AchievementsUi(),
+    val quickDailyAvg: Float = 0f
 )

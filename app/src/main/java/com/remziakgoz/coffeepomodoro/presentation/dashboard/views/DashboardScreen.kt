@@ -168,7 +168,9 @@ fun DashboardScreen(
                 // Option 2: Quick Stats
                 QuickStatsSection(
                     modifier = modifier.padding(horizontal = 16.dp),
-                    progress = 45
+                    dailyAvg = uiState.quickDailyAvg,
+                    bestStreak = uiState.stats.bestStreak,
+                    total = uiState.stats.totalCups
                 )
 
                 Spacer(modifier = modifier.size(8.dp))

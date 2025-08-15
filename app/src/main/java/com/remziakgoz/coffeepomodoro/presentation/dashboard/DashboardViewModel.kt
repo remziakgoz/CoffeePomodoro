@@ -6,6 +6,7 @@ import com.remziakgoz.coffeepomodoro.data.local.preferences.PreferenceManager
 import com.remziakgoz.coffeepomodoro.domain.model.AchievementsUi
 import com.remziakgoz.coffeepomodoro.domain.model.UserStats
 import com.remziakgoz.coffeepomodoro.domain.use_cases.UserStatsUseCases
+import com.remziakgoz.coffeepomodoro.utils.getCurrentDayIndex
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -37,6 +38,7 @@ class DashboardViewModel @Inject constructor(
                    _uiState.value = _uiState.value.copy(
                        stats = stats,
                        achievements = mapAchievements(stats),
+                       quickDailyAvg = calcDailyAvg(stats),
                        isLoading = false,
                        isErrorMessage = null
                    )
@@ -61,6 +63,15 @@ class DashboardViewModel @Inject constructor(
             morningStar = morningStar,
             consistency = consistency
         )
+    }
+
+    private fun calcDailyAvg(stats: UserStats): Float {
+        val activeDaysSoFar = stats.totalDays + if (stats.todayCups > 0) 1 else 0
+        if (activeDaysSoFar > 0) {
+            return (stats.totalCups.toFloat() / activeDaysSoFar).coerceAtLeast(0f)
+        }
+        val daysElapsedThisWeek = (getCurrentDayIndex() + 1).coerceIn(1, 7)
+        return (stats.weeklyCups.toFloat() / daysElapsedThisWeek).coerceAtLeast(0f)
     }
     
 }
