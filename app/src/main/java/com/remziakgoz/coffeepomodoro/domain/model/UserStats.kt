@@ -43,14 +43,8 @@ data class UserStats(
     val dailyData: List<Int> = listOf(0, 0, 0, 0, 0, 0, 0),
 
     // Achievements
-    @ColumnInfo(name = "goldReached")
-    val goalReached: Boolean = false,
-    @ColumnInfo(name = "threeDayStreak")
-    val threeDayStreak: Boolean = false,
     @ColumnInfo(name = "morningStar")
     val morningStar: Boolean = false,
-    @ColumnInfo(name = "consistency")
-    val consistency: Boolean = false,
 
     // Other
     @ColumnInfo(name = "dailyAverage")
