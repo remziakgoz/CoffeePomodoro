@@ -2,6 +2,7 @@ package com.remziakgoz.coffeepomodoro.presentation.dashboard.views
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,17 +14,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.paint
@@ -35,13 +34,20 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.animateLottieCompositionAsState
+import com.airbnb.lottie.compose.rememberLottieComposition
 import com.remziakgoz.coffeepomodoro.R
 import com.remziakgoz.coffeepomodoro.presentation.components.AchievementSection
 import com.remziakgoz.coffeepomodoro.presentation.components.CoffeeProgressCard
 import com.remziakgoz.coffeepomodoro.presentation.components.CoffeeTipSection
 import com.remziakgoz.coffeepomodoro.presentation.components.CompactWeeklyProgress
+import com.remziakgoz.coffeepomodoro.presentation.components.LevelUpFlowOverlay
 import com.remziakgoz.coffeepomodoro.presentation.components.QuickStatsSection
+import com.remziakgoz.coffeepomodoro.presentation.dashboard.DashboardUiState
 import com.remziakgoz.coffeepomodoro.presentation.dashboard.DashboardViewModel
 
 @Composable
@@ -51,8 +57,8 @@ fun DashboardScreen(
     dashboardViewModel: DashboardViewModel = hiltViewModel()
 ) {
 
-    val successText by remember { mutableStateOf("Espresso Master\nCups Drank") }
     val uiState by dashboardViewModel.uiState.collectAsState()
+    var showLevelDialog by remember { mutableStateOf(false) }
 
     Box(
         modifier = modifier
@@ -90,18 +96,43 @@ fun DashboardScreen(
                         horizontalArrangement = Arrangement.Center,
                     ) {
                         Image(
-                            painterResource(id = R.drawable.successcup),
-                            contentDescription = "Success Cup",
-                            modifier = modifier.size(90.dp)
+                            painterResource(id = uiState.levelIconRes),
+                            contentDescription = "Current Level Cup",
+                            modifier = modifier
+                                .size(90.dp)
+                                .pointerInput(Unit) { detectTapGestures { showLevelDialog = true } }
                         )
                         Text(
-                            text = successText,
+                            text = "${uiState.levelTitle}\nCups Drank",
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Medium,
                             color = Color.White.copy(alpha = 0.9f),
                             lineHeight = 26.sp
                         )
 
+                    }
+
+                    if (showLevelDialog) {
+                        val hasNext = uiState.remainingToNext > 0
+                        AlertDialog(
+                            onDismissRequest = { showLevelDialog = false },
+                            confirmButton = {
+                                TextButton(onClick = { showLevelDialog = false }) {
+                                    Text(text = "OK")
+                                }
+                            },
+                            title = { Text("Level Info ℹ️") },
+                            text = {
+                                if (hasNext) {
+                                    Text(
+                                        "Goal for the next level: ${uiState.nextTargetTotal} total cups.\n" +
+                                                "Remaining cups to next level: ${uiState.remainingToNext}"
+                                    )
+                                } else {
+                                    Text("You've reached the maximum level!")
+                                }
+                            }
+                        )
                     }
                 }
 
@@ -182,6 +213,15 @@ fun DashboardScreen(
 
                 Spacer(modifier = modifier.size(24.dp))
 
+            }
+
+            if (uiState.justLeveledUp) {
+                LevelUpFlowOverlay(
+                    ui = uiState,
+                    visible = uiState.justLeveledUp,
+                    lottieResId = "celebration.json",          // kendi Lottie’n
+                    onContinue = { dashboardViewModel.consumeLevelUpAnimation() }
+                )
             }
 
         }

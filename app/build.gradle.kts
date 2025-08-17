@@ -77,6 +77,7 @@ dependencies {
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
     implementation(libs.firebase.firestore.ktx)
+    implementation(libs.androidx.material.icons.extended)
     ksp(libs.room.compiler)
     ksp(libs.dagger.hilt.android.compiler)
     testImplementation(libs.junit)

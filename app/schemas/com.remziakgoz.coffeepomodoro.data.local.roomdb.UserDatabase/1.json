@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "cda6dc4c606d1d7e604049e1c723efeb",
+    "identityHash": "c822f83b84e2c2b3655b57fcea2c36a5",
     "entities": [
       {
         "tableName": "UserStats",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`localId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `email` TEXT, `firebaseId` TEXT, `createdAt` INTEGER NOT NULL, `todayCups` INTEGER NOT NULL, `weeklyCups` INTEGER NOT NULL, `monthlyCups` INTEGER NOT NULL, `todayDate` TEXT NOT NULL, `currentWeekStart` TEXT NOT NULL, `currentMonth` TEXT NOT NULL, `weeklyGoal` INTEGER NOT NULL, `bestStreak` INTEGER NOT NULL, `currentStreak` INTEGER NOT NULL, `dailyData` TEXT NOT NULL, `goldReached` INTEGER NOT NULL, `threeDayStreak` INTEGER NOT NULL, `morningStar` INTEGER NOT NULL, `consistency` INTEGER NOT NULL, `dailyAverage` REAL NOT NULL, `totalDays` INTEGER NOT NULL, `totalCups` INTEGER NOT NULL, `lastUpdated` INTEGER NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`localId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `email` TEXT, `firebaseId` TEXT, `createdAt` INTEGER NOT NULL, `todayCups` INTEGER NOT NULL, `weeklyCups` INTEGER NOT NULL, `monthlyCups` INTEGER NOT NULL, `todayDate` TEXT NOT NULL, `currentWeekStart` TEXT NOT NULL, `currentMonth` TEXT NOT NULL, `weeklyGoal` INTEGER NOT NULL, `bestStreak` INTEGER NOT NULL, `currentStreak` INTEGER NOT NULL, `dailyData` TEXT NOT NULL, `morningStar` INTEGER NOT NULL, `dailyAverage` REAL NOT NULL, `totalDays` INTEGER NOT NULL, `totalCups` INTEGER NOT NULL, `lastUpdated` INTEGER NOT NULL)",
         "fields": [
           {
             "fieldPath": "localId",
@@ -97,26 +97,8 @@
             "notNull": true
           },
           {
-            "fieldPath": "goldReached",
-            "columnName": "goldReached",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "threeDayStreak",
-            "columnName": "threeDayStreak",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
             "fieldPath": "morningStar",
             "columnName": "morningStar",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "consistency",
-            "columnName": "consistency",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -155,7 +137,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'cda6dc4c606d1d7e604049e1c723efeb')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c822f83b84e2c2b3655b57fcea2c36a5')"
     ]
   }
 }
