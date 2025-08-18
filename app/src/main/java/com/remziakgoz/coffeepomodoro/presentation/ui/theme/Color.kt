@@ -20,3 +20,28 @@ val CoffeeOnPrimaryDark = Color(0xFFD8CAB1)
 val CoffeeErrorDark = Color(0xFFB84A39)
 
 val signInColor = Color(0xFFFFCFA9)
+
+val PanelTop       = Color(0xECFFFFFF)
+val PanelBottom    = Color(0xE0FFFFFF)
+val GlassStroke    = Color.White.copy(alpha = 0.45f)
+val TitleBlue      = Color(0xFF22315B)
+
+val TileTop        = Color(0xFFFFFFFF)
+val TileBottom     = Color(0xFFF8F8FC)
+
+val CurrentTop     = Color(0xFFFFF6DA)
+val CurrentBottom  = Color(0xFFFFF0C4)
+val CurrentStripe  = Color(0xFFFFD37A)
+
+val CheckTint      = Color(0xFF29C46A)
+val LockTint       = Color(0xFF9AA0C8)
+
+val CtaStart       = Color(0xFF6372FF)
+val CtaEnd         = Color(0xFF3F55D2)
+
+/* -------- Level gradient colors -------- */
+val L1A = Color(0xFFC58CFF); val L1B = Color(0xFFB37CFF)
+val L2A = Color(0xFF49B3FF); val L2B = Color(0xFF3B8CFF)
+val L3A = Color(0xFFFFC043); val L3B = Color(0xFFFF9F1C)
+val L4A = Color(0xFFFF7ACE); val L4B = Color(0xFFFF4DA6)
+val L5A = Color(0xFF7C4DFF); val L5B = Color(0xFF5E35B1)

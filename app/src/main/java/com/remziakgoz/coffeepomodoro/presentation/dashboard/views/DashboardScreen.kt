@@ -14,9 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -34,12 +32,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.airbnb.lottie.compose.LottieAnimation
-import com.airbnb.lottie.compose.LottieCompositionSpec
-import com.airbnb.lottie.compose.animateLottieCompositionAsState
-import com.airbnb.lottie.compose.rememberLottieComposition
 import com.remziakgoz.coffeepomodoro.R
 import com.remziakgoz.coffeepomodoro.presentation.components.AchievementSection
 import com.remziakgoz.coffeepomodoro.presentation.components.CoffeeProgressCard
@@ -47,8 +40,8 @@ import com.remziakgoz.coffeepomodoro.presentation.components.CoffeeTipSection
 import com.remziakgoz.coffeepomodoro.presentation.components.CompactWeeklyProgress
 import com.remziakgoz.coffeepomodoro.presentation.components.LevelUpFlowOverlay
 import com.remziakgoz.coffeepomodoro.presentation.components.QuickStatsSection
-import com.remziakgoz.coffeepomodoro.presentation.dashboard.DashboardUiState
 import com.remziakgoz.coffeepomodoro.presentation.dashboard.DashboardViewModel
+import com.remziakgoz.coffeepomodoro.presentation.components.LevelsDialogV3
 
 @Composable
 fun DashboardScreen(
@@ -113,26 +106,7 @@ fun DashboardScreen(
                     }
 
                     if (showLevelDialog) {
-                        val hasNext = uiState.remainingToNext > 0
-                        AlertDialog(
-                            onDismissRequest = { showLevelDialog = false },
-                            confirmButton = {
-                                TextButton(onClick = { showLevelDialog = false }) {
-                                    Text(text = "OK")
-                                }
-                            },
-                            title = { Text("Level Info ℹ️") },
-                            text = {
-                                if (hasNext) {
-                                    Text(
-                                        "Goal for the next level: ${uiState.nextTargetTotal} total cups.\n" +
-                                                "Remaining cups to next level: ${uiState.remainingToNext}"
-                                    )
-                                } else {
-                                    Text("You've reached the maximum level!")
-                                }
-                            }
-                        )
+                        LevelsDialogV3(true, { showLevelDialog = false }, uiState)
                     }
                 }
 
@@ -218,8 +192,8 @@ fun DashboardScreen(
             if (uiState.justLeveledUp) {
                 LevelUpFlowOverlay(
                     ui = uiState,
-                    visible = uiState.justLeveledUp,
-                    lottieResId = "celebration.json",          // kendi Lottie’n
+                    visible = true,
+                    lottieResId = "celebration.json",
                     onContinue = { dashboardViewModel.consumeLevelUpAnimation() }
                 )
             }
