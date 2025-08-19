@@ -5,7 +5,6 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -30,7 +29,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,7 +36,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -59,7 +56,6 @@ fun PomodoroScreen(
     modifier: Modifier,
     innerPadding: PaddingValues,
     onNavigateToProfile: () -> Unit = {},
-    onSwipeToDashboard: () -> Unit,
     viewModel: PomodoroViewModel = hiltViewModel(),
     appInitViewModel: AppInitViewModel = hiltViewModel()
 ) {
@@ -113,7 +109,7 @@ fun PomodoroScreen(
         animationSpec = tween(durationMillis = 1000), // 1 second smooth transition
         label = "topColor"
     )
-    
+
     val bottomColor by animateColorAsState(
         targetValue = backgroundColors.second,
         animationSpec = tween(durationMillis = 1000), // 1 second smooth transition
@@ -155,20 +151,13 @@ fun PomodoroScreen(
         endY = Float.POSITIVE_INFINITY
     )
 
+    // SWIPE DETECTION KODUNU KALDIRDIK - Artık drawer sistem hallediyor
     Box(
         modifier = modifier
             .fillMaxSize()
             .background(gradientBrush)
-            .pointerInput(Unit) {
-                detectHorizontalDragGestures { change, dragAmount ->
-                    if (dragAmount < -80) {
-                        onSwipeToDashboard()
-                    }
-                }
-            }
+        // .pointerInput(Unit) { ... } kısmını kaldırdık
     ) {
-
-
         Box(
             modifier = modifier
                 .fillMaxSize()
@@ -182,7 +171,6 @@ fun PomodoroScreen(
             ) {
                 Spacer(modifier = modifier.padding(top = 20.dp))
 
-                // Top bar with user profile, centered cycle indicator and positioned restart button
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -211,7 +199,6 @@ fun PomodoroScreen(
                         )
                     }
 
-                    // iPhone notch-style cycle indicator - always centered and clickable
                     Box(
                         modifier = Modifier
                             .align(Alignment.Center)

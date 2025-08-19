@@ -7,31 +7,55 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.core.content.edit
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.remziakgoz.coffeepomodoro.presentation.root.MainScreenWithPullDrawer
 import com.remziakgoz.coffeepomodoro.presentation.auth.views.SignInScreen
 import com.remziakgoz.coffeepomodoro.presentation.auth.views.SignUpScreen
 import com.remziakgoz.coffeepomodoro.presentation.auth.views.WelcomeScreen
-import com.remziakgoz.coffeepomodoro.presentation.pomodoro.views.PomodoroScreen
 import com.remziakgoz.coffeepomodoro.presentation.ui.theme.CoffePomodroTheme
-import androidx.core.content.edit
-import androidx.hilt.navigation.compose.hiltViewModel
-import com.remziakgoz.coffeepomodoro.presentation.dashboard.DashboardViewModel
-import com.remziakgoz.coffeepomodoro.presentation.dashboard.views.DashboardScreen
-import com.remziakgoz.coffeepomodoro.presentation.pomodoro.PomodoroViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import android.graphics.Color as AndroidColor
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            WindowCompat.setDecorFitsSystemWindows(window, false)
+            window.navigationBarColor = AndroidColor.TRANSPARENT
+            window.statusBarColor = AndroidColor.TRANSPARENT
+
+            val controller = ViewCompat.getWindowInsetsController(window.decorView)
+            controller?.let {
+                it.hide(WindowInsetsCompat.Type.navigationBars())
+                it.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            }
+        } else {
+            window.navigationBarColor = AndroidColor.TRANSPARENT
+            window.statusBarColor = AndroidColor.TRANSPARENT
+
+            @Suppress("DEPRECATION")
+            window.decorView.systemUiVisibility = (
+                    android.view.View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                            or android.view.View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                            or android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                            or android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                            or android.view.View.SYSTEM_UI_FLAG_FULLSCREEN
+                            or android.view.View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                    )
+        }
 
         val sharedPreferences = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
 
@@ -42,18 +66,18 @@ class MainActivity : ComponentActivity() {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     NavHost(
                         navController = navController,
-                        startDestination = "pomodoro",
+                        startDestination = "main",
                         route = "root"
                     ) {
-                        composable("pomodoro") {
+                        composable("main") {
                             val parentEntry = remember(navController.currentBackStackEntry) {
                                 navController.getBackStackEntry("root")
                             }
-                            val viewModel: PomodoroViewModel = hiltViewModel(parentEntry)
-                            PomodoroScreen(
+                            MainScreenWithPullDrawer(
                                 modifier = Modifier,
                                 innerPadding = innerPadding,
-                                viewModel = viewModel,
+                                pomodoroViewModel = hiltViewModel(parentEntry),
+                                dashboardViewModel = hiltViewModel(parentEntry),
                                 onNavigateToProfile = {
                                     val hasSeenWelcome = sharedPreferences.getBoolean("has_seen_welcome", false)
                                     if (hasSeenWelcome) {
@@ -61,27 +85,23 @@ class MainActivity : ComponentActivity() {
                                     } else {
                                         navController.navigate("welcome")
                                     }
-                                },
-                                onSwipeToDashboard = {
-                                    navController.navigate("dashboard") {
-                                        launchSingleTop = true
-                                    }
                                 }
                             )
                         }
+
                         composable("welcome") {
                             WelcomeScreen(
                                 modifier = Modifier,
                                 innerPadding = innerPadding,
                                 onContinue = {
-                                    // Mark welcome screen as seen
                                     sharedPreferences.edit { putBoolean("has_seen_welcome", true) }
                                     navController.navigate("signin") {
-                                        popUpTo("pomodoro") { inclusive = false }
+                                        popUpTo("main") { inclusive = false }
                                     }
                                 }
                             )
                         }
+
                         composable("signin") {
                             SignInScreen(
                                 modifier = Modifier,
@@ -96,6 +116,7 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
                         }
+
                         composable("signup") {
                             SignUpScreen(
                                 modifier = Modifier,
@@ -108,22 +129,6 @@ class MainActivity : ComponentActivity() {
                                 onNavigateToSignIn = {
                                     navController.navigate("signin") {
                                         popUpTo("signup") { inclusive = true }
-                                    }
-                                }
-                            )
-                        }
-                        composable("dashboard") {
-                            val parentEntry = remember(navController.currentBackStackEntry) {
-                                navController.getBackStackEntry("root")
-                            }
-                            val dashboardViewModel: DashboardViewModel = hiltViewModel(parentEntry)
-                            DashboardScreen(
-                                modifier = Modifier,
-                                dashboardViewModel = dashboardViewModel,
-                                onSwipeToPomodoroScreen = {
-                                    navController.navigate("pomodoro") {
-                                        popUpTo("pomodoro") { inclusive = true}
-                                        launchSingleTop = true
                                     }
                                 }
                             )
