@@ -298,7 +298,7 @@ private fun buildLevelSpecs(ui: DashboardUiState): List<LevelSpec> {
     val current = ui.level
 
     fun unlockedFor(i: Int) = when (i) {
-        1 -> total >= 50
+        1 -> total >= 10
         2 -> total >= 50 && weeklyDone
         3 -> total >= 250 && streak >= 21
         4 -> total >= 500 && streak >= 30
@@ -306,7 +306,7 @@ private fun buildLevelSpecs(ui: DashboardUiState): List<LevelSpec> {
     }
 
     return listOf(
-        LevelSpec("Espresso Master",     "50 total cups",                 R.drawable.cuplevel1, 1, unlockedFor(1), current == 1),
+        LevelSpec("Espresso Master",     "10 total cups",                 R.drawable.cuplevel1, 1, unlockedFor(1), current == 1),
         LevelSpec("Cappuccino Champion", "50 total + weekly goal",        R.drawable.cuplevel2, 2, unlockedFor(2), current == 2),
         LevelSpec("Latte Legend",        "250 total + 21-day streak",     R.drawable.cuplevel3, 3, unlockedFor(3), current == 3),
         LevelSpec("Mocha Monarch",       "500 total + 30-day streak",     R.drawable.cuplevel4, 4, unlockedFor(4), current == 4),

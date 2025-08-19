@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import java.util.logging.Level
 import javax.inject.Inject
 import kotlin.math.max
 
@@ -100,11 +99,12 @@ class DashboardViewModel @Inject constructor(
     )
 
     private val levelMeta = listOf(
-        LevelMeta(1, "Espresso Master", R.drawable.cuplevel1),
-        LevelMeta(2, "Cappuccino Champion", R.drawable.cuplevel2),
-        LevelMeta(3, "Latte Legend", R.drawable.cuplevel3),
-        LevelMeta(4, "Mocha Monarch", R.drawable.cuplevel4),
-        LevelMeta(5, "Coffee Conqueror", R.drawable.cuplevel5)
+        LevelMeta(1, "Babyccino", R.drawable.cuplevel0),
+        LevelMeta(2, "Espresso Master", R.drawable.cuplevel1),
+        LevelMeta(3, "Cappuccino Champion", R.drawable.cuplevel2),
+        LevelMeta(4, "Latte Legend", R.drawable.cuplevel3),
+        LevelMeta(5, "Mocha Monarch", R.drawable.cuplevel4),
+        LevelMeta(6, "Coffee Conqueror", R.drawable.cuplevel5)
     )
 
     private data class LevelCalc(
@@ -121,12 +121,12 @@ class DashboardViewModel @Inject constructor(
 
         return when {
             total >= 1000 -> {
-                val meta = levelMeta[4] // L5
+                val meta = levelMeta[5] // L5
                 LevelCalc(meta, nextTargetTotal = 1000, remainingCups = 0, remainingDays = 0)
             }
 
             total >= 500 && streak >= 30 -> {
-                val meta = levelMeta[3] // L4
+                val meta = levelMeta[4] // L4
                 LevelCalc(
                     meta = meta,
                     nextTargetTotal = 1000,
@@ -136,7 +136,7 @@ class DashboardViewModel @Inject constructor(
             }
 
             total >= 250 && streak >= 21 -> {
-                val meta = levelMeta[2] // L3
+                val meta = levelMeta[3] // L3
                 LevelCalc(
                     meta = meta,
                     nextTargetTotal = 500,
@@ -146,7 +146,7 @@ class DashboardViewModel @Inject constructor(
             }
 
             total >= 50 && metWeekly -> {
-                val meta = levelMeta[1] // L2
+                val meta = levelMeta[2] // L2
                 LevelCalc(
                     meta = meta,
                     nextTargetTotal = 250,
@@ -155,12 +155,22 @@ class DashboardViewModel @Inject constructor(
                 )
             }
 
-            else -> {
-                val meta = levelMeta[0] // L1
+            total >= 10 -> {
+                val meta = levelMeta[1]
                 LevelCalc(
                     meta = meta,
                     nextTargetTotal = 50,
                     remainingCups = (50 - total).coerceAtLeast(0),
+                    remainingDays = 0
+                )
+            }
+
+            else -> {
+                val meta = levelMeta[0] // L1
+                LevelCalc(
+                    meta = meta,
+                    nextTargetTotal = 10,
+                    remainingCups = (10 - total).coerceAtLeast(0),
                     remainingDays = 0
                 )
             }
@@ -171,10 +181,11 @@ class DashboardViewModel @Inject constructor(
         val total = stats.totalCups
         val streakDays = stats.currentStreak
         return when (displayLevel) {
-            1 -> Triple(50, (50 - total).coerceAtLeast(0), 0)
-            2 -> Triple (250, (250 - total).coerceAtLeast(0), (21 - streakDays).coerceAtLeast(0))
-            3 -> Triple (500, (500 - total).coerceAtLeast(0), (30 - streakDays).coerceAtLeast(0))
-            4 -> Triple(1000, (1000 - total).coerceAtLeast(0), 0)
+            1 -> Triple(10, (10 - total).coerceAtLeast(0), 0)
+            2 -> Triple(50, (50 - total).coerceAtLeast(0), 0)
+            3 -> Triple (250, (250 - total).coerceAtLeast(0), (21 - streakDays).coerceAtLeast(0))
+            4 -> Triple (500, (500 - total).coerceAtLeast(0), (30 - streakDays).coerceAtLeast(0))
+            5 -> Triple(1000, (1000 - total).coerceAtLeast(0), 0)
             else -> Triple (1000, 0, 0)
         }
     }
