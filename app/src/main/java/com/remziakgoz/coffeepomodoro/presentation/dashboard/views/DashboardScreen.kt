@@ -1,7 +1,6 @@
 package com.remziakgoz.coffeepomodoro.presentation.dashboard.views
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,19 +17,18 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.paint
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -41,8 +39,8 @@ import com.remziakgoz.coffeepomodoro.presentation.components.CoffeeTipSection
 import com.remziakgoz.coffeepomodoro.presentation.components.CompactWeeklyProgress
 import com.remziakgoz.coffeepomodoro.presentation.components.LevelUpFlowOverlay
 import com.remziakgoz.coffeepomodoro.presentation.components.QuickStatsSection
-import com.remziakgoz.coffeepomodoro.presentation.dashboard.DashboardViewModel
 import com.remziakgoz.coffeepomodoro.presentation.components.LevelsDialogV3
+import com.remziakgoz.coffeepomodoro.presentation.dashboard.DashboardViewModel
 
 @Composable
 fun DashboardScreen(
@@ -50,184 +48,139 @@ fun DashboardScreen(
     onSwipeToPomodoroScreen: () -> Unit,
     dashboardViewModel: DashboardViewModel = hiltViewModel()
 ) {
-
     val uiState by dashboardViewModel.uiState.collectAsState()
     var showLevelDialog by remember { mutableStateOf(false) }
-
-    // Smooth swipe handling states
-    var hasNavigated by remember { mutableStateOf(false) }
-    var swipeStartTime by remember { mutableLongStateOf(0L) }
 
     Box(
         modifier = modifier
             .fillMaxSize()
-            .pointerInput(Unit) {
-                detectHorizontalDragGestures(
-                    onDragStart = {
-                        swipeStartTime = System.currentTimeMillis()
-                        hasNavigated = false
-                    }
-                ) { change, dragAmount ->
-                    val currentTime = System.currentTimeMillis()
-                    val swipeDuration = currentTime - swipeStartTime
-
-                    // Optimized swipe detection with multiple safeguards
-                    if (!hasNavigated &&
-                        dragAmount > 45 && // Minimum swipe distance (right swipe)
-                        swipeDuration > 1 && // Minimum swipe duration (prevents accidental touches)
-                        swipeDuration < 800) { // Maximum swipe duration (prevents slow/unintentional swipes)
-
-                        hasNavigated = true
-                        onSwipeToPomodoroScreen()
-                    }
-                }
-            }
+            .clipToBounds()
+            .paint(
+                painterResource(R.drawable.dashbg),
+                contentScale = ContentScale.Crop
+            )
     ) {
-
-        Box(
+        Column(
             modifier = modifier
-                .paint(
-                    painterResource(R.drawable.dashbg),
-                    contentScale = ContentScale.Crop
-                )
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
         ) {
 
-            Column(
+            Box(
                 modifier = modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
+                    .fillMaxWidth()
+                    .padding(16.dp)
             ) {
-
-                Box(
-                    modifier = modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center,
-                    ) {
-                        Image(
-                            painterResource(id = uiState.levelIconRes),
-                            contentDescription = "Current Level Cup",
-                            modifier = modifier
-                                .size(90.dp)
-                                .pointerInput(Unit) { detectTapGestures { showLevelDialog = true } }
-                        )
-                        Text(
-                            text = "${uiState.levelTitle}\nCups Drank",
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = Color.White.copy(alpha = 0.9f),
-                            lineHeight = 26.sp
-                        )
-
-                    }
-
-                    if (showLevelDialog) {
-                        LevelsDialogV3(true, { showLevelDialog = false }, uiState)
-                    }
+                    Image(
+                        painterResource(id = uiState.levelIconRes),
+                        contentDescription = "Current Level Cup",
+                        modifier = modifier
+                            .size(90.dp)
+                            .pointerInput(Unit) {
+                                detectTapGestures { showLevelDialog = true }
+                            }
+                    )
+                    Text(
+                        text = "${uiState.levelTitle}\nCups Drank",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color.White.copy(alpha = 0.9f),
+                        lineHeight = 26.sp
+                    )
                 }
 
-                Text(
-                    text = "Cups Drank",
-                    fontSize = 40.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = Color.White.copy(alpha = 0.8f),
-                    modifier = modifier.padding(start = 20.dp, top = 30.dp)
-                )
-
-                Spacer(modifier = modifier.size(22.dp))
-
-                Box(
-                    modifier = modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Row(
-                        modifier = modifier.padding(horizontal = 4.dp),
-                        horizontalArrangement = Arrangement.SpaceEvenly
-                    ) {
-                        CoffeeProgressCard(
-                            counter = uiState.stats.todayCups,
-                            imageId = R.drawable.cup1fordb,
-                            dayProgress = "Today"
-                        )
-                        Spacer(modifier = modifier.size(8.dp))
-                        CoffeeProgressCard(
-                            counter = uiState.stats.weeklyCups,
-                            imageId = R.drawable.cup7fordb,
-                            dayProgress = "Week"
-                        )
-                        Spacer(modifier = modifier.size(8.dp))
-                        CoffeeProgressCard(
-                            counter = uiState.stats.monthlyCups,
-                            imageId = R.drawable.cupcorefordb2,
-                            dayProgress = "Month"
-                        )
-                    }
+                if (showLevelDialog) {
+                    LevelsDialogV3(true, { showLevelDialog = false }, uiState)
                 }
-                Spacer(modifier = modifier.size(24.dp))
-
-                // Modern Weekly Progress Report
-                CompactWeeklyProgress(
-                    progress = uiState.stats.weeklyCups,
-                    goal = uiState.stats.weeklyGoal,
-                    dailyData = uiState.stats.dailyData,
-                    modifier = modifier.padding(horizontal = 16.dp)
-                )
-
-                Spacer(modifier = modifier.size(12.dp))
-
-                // Bottom Section - Responsive Layout
-
-                // Option 1: Achievement Badges
-                AchievementSection(
-                    modifier = modifier.padding(horizontal = 16.dp),
-                    progress = 25,
-                    achievements = uiState.achievements
-                )
-
-                Spacer(modifier = modifier.size(8.dp))
-
-                // Option 2: Quick Stats
-                QuickStatsSection(
-                    modifier = modifier.padding(horizontal = 16.dp),
-                    dailyAvg = uiState.quickDailyAvg,
-                    bestStreak = uiState.stats.bestStreak,
-                    total = uiState.stats.totalCups
-                )
-
-                Spacer(modifier = modifier.size(8.dp))
-
-                // Option 3: Coffee Tip
-                CoffeeTipSection(
-                    modifier = modifier.padding(horizontal = 16.dp)
-                )
-
-                Spacer(modifier = modifier.size(24.dp))
-
             }
 
-            if (uiState.justLeveledUp) {
-                LevelUpFlowOverlay(
-                    ui = uiState,
-                    visible = true,
-                    lottieResId = "celebration.json",
-                    onContinue = { dashboardViewModel.consumeLevelUpAnimation() }
-                )
-            }
+            Text(
+                text = "Cups Drank",
+                fontSize = 40.sp,
+                fontWeight = FontWeight.Medium,
+                color = Color.White.copy(alpha = 0.8f),
+                modifier = modifier.padding(start = 20.dp, top = 30.dp)
+            )
 
+            Spacer(modifier = modifier.size(22.dp))
+
+            Box(
+                modifier = modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                Row(
+                    modifier = modifier.padding(horizontal = 4.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    CoffeeProgressCard(
+                        counter = uiState.stats.todayCups,
+                        imageId = R.drawable.cup1fordb,
+                        dayProgress = "Today"
+                    )
+                    Spacer(modifier = modifier.size(8.dp))
+                    CoffeeProgressCard(
+                        counter = uiState.stats.weeklyCups,
+                        imageId = R.drawable.cup7fordb,
+                        dayProgress = "Week"
+                    )
+                    Spacer(modifier = modifier.size(8.dp))
+                    CoffeeProgressCard(
+                        counter = uiState.stats.monthlyCups,
+                        imageId = R.drawable.cupcorefordb2,
+                        dayProgress = "Month"
+                    )
+                }
+            }
+            Spacer(modifier = modifier.size(24.dp))
+
+            // Modern Weekly Progress Report
+            CompactWeeklyProgress(
+                progress = uiState.stats.weeklyCups,
+                goal = uiState.stats.weeklyGoal,
+                dailyData = uiState.stats.dailyData,
+                modifier = modifier.padding(horizontal = 16.dp)
+            )
+
+            Spacer(modifier = modifier.size(12.dp))
+
+            // Achievement Badges
+            AchievementSection(
+                modifier = modifier.padding(horizontal = 16.dp),
+                progress = 25,
+                achievements = uiState.achievements
+            )
+
+            Spacer(modifier = modifier.size(8.dp))
+
+            // Quick Stats
+            QuickStatsSection(
+                modifier = modifier.padding(horizontal = 16.dp),
+                dailyAvg = uiState.quickDailyAvg,
+                bestStreak = uiState.stats.bestStreak,
+                total = uiState.stats.totalCups
+            )
+
+            Spacer(modifier = modifier.size(8.dp))
+
+            // Coffee Tip
+            CoffeeTipSection(
+                modifier = modifier.padding(horizontal = 16.dp)
+            )
+
+            Spacer(modifier = modifier.size(24.dp))
+        }
+
+        if (uiState.justLeveledUp) {
+            LevelUpFlowOverlay(
+                ui = uiState,
+                visible = true,
+                lottieResId = "celebration.json",
+                onContinue = { dashboardViewModel.consumeLevelUpAnimation() }
+            )
         }
     }
-
-
-}
-
-@Preview(showBackground = true)
-@Composable
-fun Preview(modifier: Modifier = Modifier) {
-    DashboardScreen(
-        modifier = modifier,
-        onSwipeToPomodoroScreen = {}
-    )
 }

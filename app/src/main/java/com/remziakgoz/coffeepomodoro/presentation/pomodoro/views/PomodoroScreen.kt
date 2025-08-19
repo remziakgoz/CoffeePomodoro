@@ -5,7 +5,6 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -28,10 +27,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,7 +36,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -60,17 +56,12 @@ fun PomodoroScreen(
     modifier: Modifier,
     innerPadding: PaddingValues,
     onNavigateToProfile: () -> Unit = {},
-    onSwipeToDashboard: () -> Unit,
     viewModel: PomodoroViewModel = hiltViewModel(),
     appInitViewModel: AppInitViewModel = hiltViewModel()
 ) {
     val uiState = viewModel.uiState.collectAsState()
     var showResetDialog by remember { mutableStateOf(false) }
     var restartCounter by remember { mutableIntStateOf(0) }
-
-    // Smooth swipe handling states
-    var hasNavigated by remember { mutableStateOf(false) }
-    var swipeStartTime by remember { mutableLongStateOf(0L) }
 
     LaunchedEffect(Unit) {
         appInitViewModel.syncEverything()
@@ -160,31 +151,12 @@ fun PomodoroScreen(
         endY = Float.POSITIVE_INFINITY
     )
 
+    // SWIPE DETECTION KODUNU KALDIRDIK - Artık drawer sistem hallediyor
     Box(
         modifier = modifier
             .fillMaxSize()
             .background(gradientBrush)
-            .pointerInput(Unit) {
-                detectHorizontalDragGestures(
-                    onDragStart = {
-                        swipeStartTime = System.currentTimeMillis()
-                        hasNavigated = false
-                    }
-                ) { change, dragAmount ->
-                    val currentTime = System.currentTimeMillis()
-                    val swipeDuration = currentTime - swipeStartTime
-
-                    // Optimized swipe detection with multiple safeguards
-                    if (!hasNavigated &&
-                        dragAmount < -45 && // Minimum swipe distance (left swipe)
-                        swipeDuration > 1 && // Minimum swipe duration (prevents accidental touches)
-                        swipeDuration < 800) { // Maximum swipe duration (prevents slow/unintentional swipes)
-
-                        hasNavigated = true
-                        onSwipeToDashboard()
-                    }
-                }
-            }
+        // .pointerInput(Unit) { ... } kısmını kaldırdık
     ) {
         Box(
             modifier = modifier
