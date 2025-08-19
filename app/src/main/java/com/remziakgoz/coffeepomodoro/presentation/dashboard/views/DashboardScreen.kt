@@ -18,6 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -53,12 +54,30 @@ fun DashboardScreen(
     val uiState by dashboardViewModel.uiState.collectAsState()
     var showLevelDialog by remember { mutableStateOf(false) }
 
+    // Smooth swipe handling states
+    var hasNavigated by remember { mutableStateOf(false) }
+    var swipeStartTime by remember { mutableLongStateOf(0L) }
+
     Box(
         modifier = modifier
             .fillMaxSize()
             .pointerInput(Unit) {
-                detectHorizontalDragGestures { change, dragAmount ->
-                    if (dragAmount > 80) {
+                detectHorizontalDragGestures(
+                    onDragStart = {
+                        swipeStartTime = System.currentTimeMillis()
+                        hasNavigated = false
+                    }
+                ) { change, dragAmount ->
+                    val currentTime = System.currentTimeMillis()
+                    val swipeDuration = currentTime - swipeStartTime
+
+                    // Optimized swipe detection with multiple safeguards
+                    if (!hasNavigated &&
+                        dragAmount > 45 && // Minimum swipe distance (right swipe)
+                        swipeDuration > 1 && // Minimum swipe duration (prevents accidental touches)
+                        swipeDuration < 800) { // Maximum swipe duration (prevents slow/unintentional swipes)
+
+                        hasNavigated = true
                         onSwipeToPomodoroScreen()
                     }
                 }

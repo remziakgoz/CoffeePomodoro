@@ -28,6 +28,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -66,6 +67,10 @@ fun PomodoroScreen(
     val uiState = viewModel.uiState.collectAsState()
     var showResetDialog by remember { mutableStateOf(false) }
     var restartCounter by remember { mutableIntStateOf(0) }
+
+    // Smooth swipe handling states
+    var hasNavigated by remember { mutableStateOf(false) }
+    var swipeStartTime by remember { mutableLongStateOf(0L) }
 
     LaunchedEffect(Unit) {
         appInitViewModel.syncEverything()
@@ -113,7 +118,7 @@ fun PomodoroScreen(
         animationSpec = tween(durationMillis = 1000), // 1 second smooth transition
         label = "topColor"
     )
-    
+
     val bottomColor by animateColorAsState(
         targetValue = backgroundColors.second,
         animationSpec = tween(durationMillis = 1000), // 1 second smooth transition
@@ -160,15 +165,27 @@ fun PomodoroScreen(
             .fillMaxSize()
             .background(gradientBrush)
             .pointerInput(Unit) {
-                detectHorizontalDragGestures { change, dragAmount ->
-                    if (dragAmount < -80) {
+                detectHorizontalDragGestures(
+                    onDragStart = {
+                        swipeStartTime = System.currentTimeMillis()
+                        hasNavigated = false
+                    }
+                ) { change, dragAmount ->
+                    val currentTime = System.currentTimeMillis()
+                    val swipeDuration = currentTime - swipeStartTime
+
+                    // Optimized swipe detection with multiple safeguards
+                    if (!hasNavigated &&
+                        dragAmount < -45 && // Minimum swipe distance (left swipe)
+                        swipeDuration > 1 && // Minimum swipe duration (prevents accidental touches)
+                        swipeDuration < 800) { // Maximum swipe duration (prevents slow/unintentional swipes)
+
+                        hasNavigated = true
                         onSwipeToDashboard()
                     }
                 }
             }
     ) {
-
-
         Box(
             modifier = modifier
                 .fillMaxSize()
@@ -182,7 +199,6 @@ fun PomodoroScreen(
             ) {
                 Spacer(modifier = modifier.padding(top = 20.dp))
 
-                // Top bar with user profile, centered cycle indicator and positioned restart button
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -211,7 +227,6 @@ fun PomodoroScreen(
                         )
                     }
 
-                    // iPhone notch-style cycle indicator - always centered and clickable
                     Box(
                         modifier = Modifier
                             .align(Alignment.Center)
