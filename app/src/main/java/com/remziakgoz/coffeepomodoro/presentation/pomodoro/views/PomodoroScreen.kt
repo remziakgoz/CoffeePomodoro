@@ -130,16 +130,16 @@ fun PomodoroScreen(
         label = "restartButtonAlpha"
     )
 
-    // Animate next step button visibility with same logic as restart button
+    val isNextStepEnabled = when (uiState.value.currentState) { // ➕ NEW
+        PomodoroState.Ready -> false
+        PomodoroState.Work, PomodoroState.Paused -> true
+        PomodoroState.ShortBreak, PomodoroState.LongBreak -> uiState.value.isRunning
+        else -> false
+    }
+
+
     val nextStepButtonAlpha by animateFloatAsState(
-        targetValue = when (uiState.value.currentState) {
-            PomodoroState.Ready -> 0f //
-            PomodoroState.Work, PomodoroState.Paused -> 1f //
-            PomodoroState.ShortBreak, PomodoroState.LongBreak -> {
-                if (uiState.value.isRunning) 1f else 0f //
-            }
-            else -> 0f
-        },
+        targetValue = if (isNextStepEnabled) 1f else 0f,
         animationSpec = tween(durationMillis = 300),
         label = "nextStepButtonAlpha"
     )
@@ -151,12 +151,10 @@ fun PomodoroScreen(
         endY = Float.POSITIVE_INFINITY
     )
 
-    // SWIPE DETECTION KODUNU KALDIRDIK - Artık drawer sistem hallediyor
     Box(
         modifier = modifier
             .fillMaxSize()
             .background(gradientBrush)
-        // .pointerInput(Unit) { ... } kısmını kaldırdık
     ) {
         Box(
             modifier = modifier
@@ -308,7 +306,8 @@ fun PomodoroScreen(
                             .align(Alignment.CenterEnd)
                             .padding(end = 20.dp)
                             .alpha(nextStepButtonAlpha),
-                        onClick = { viewModel.nextStep() }
+                        onClick = { viewModel.nextStep() },
+                        enabled = isNextStepEnabled
                     )
                 }
 

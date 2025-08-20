@@ -34,7 +34,8 @@ import com.remziakgoz.coffeepomodoro.R
 @Composable
 fun NextStepButton(
     modifier: Modifier = Modifier, 
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    enabled: Boolean = true
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -87,6 +88,7 @@ fun NextStepButton(
                     shape = CircleShape
                 )
                 .clickable(
+                    enabled = enabled,
                     interactionSource = interactionSource,
                     indication = null,
                     onClick = {

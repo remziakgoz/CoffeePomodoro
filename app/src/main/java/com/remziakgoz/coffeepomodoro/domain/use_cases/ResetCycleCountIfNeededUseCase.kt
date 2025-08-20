@@ -16,7 +16,7 @@ class ResetCycleCountIfNeededUseCase @Inject constructor(
         val lastDate = preferenceManager.getLastResetDate()
 
         return if (lastDate == null || lastDate != today) {
-            preferenceManager.clearDailyValue()
+            preferenceManager.clearCycleCount()
             preferenceManager.saveLastResetDate(today)
             ResetResult.ResetDone
         } else {
