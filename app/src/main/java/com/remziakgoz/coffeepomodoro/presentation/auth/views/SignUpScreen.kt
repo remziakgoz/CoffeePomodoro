@@ -2,6 +2,9 @@ package com.remziakgoz.coffeepomodoro.presentation.auth.views
 
 import android.widget.Toast
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,6 +29,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,11 +42,14 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.remziakgoz.coffeepomodoro.R
 import com.remziakgoz.coffeepomodoro.presentation.auth.AuthViewModel
+import com.remziakgoz.coffeepomodoro.presentation.components.GooeySlimeLoader
 import com.remziakgoz.coffeepomodoro.presentation.ui.theme.Pacifico
 import com.remziakgoz.coffeepomodoro.presentation.ui.theme.signInColor
+import kotlinx.coroutines.launch
 
 @Composable
 fun SignUpScreen(
@@ -56,7 +63,9 @@ fun SignUpScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
     val context = LocalContext.current
+    var isLoading by remember { mutableStateOf(false) }
 
     Box(modifier = modifier
         .fillMaxSize()
@@ -100,6 +109,7 @@ fun SignUpScreen(
             TextField(
                 value = email,
                 onValueChange = { email = it },
+                enabled = !isLoading,
                 label = { Text("Email")},
                 leadingIcon = { Icon(painterResource(R.drawable.mailicon), contentDescription = "Email Icon") },
                 placeholder = { Text("Please enter your email") },
@@ -118,6 +128,7 @@ fun SignUpScreen(
             TextField(
                 value = password,
                 onValueChange = { password = it },
+                enabled = !isLoading,
                 label = { Text("Password") },
                 leadingIcon = { Icon(painterResource(R.drawable.passwordicon), contentDescription = "Password Icon") },
                 trailingIcon = {
@@ -147,12 +158,22 @@ fun SignUpScreen(
                 if (email.isEmpty() || password.isEmpty()) {
                     Toast.makeText(context, "Enter email and password!", Toast.LENGTH_LONG).show()
                 } else {
-                    viewModel.signUp(email,password,
-                        onSuccess = { onNavigateBack() },
-                        onError = { errorMsg ->
-                            Toast.makeText(context, errorMsg, Toast.LENGTH_LONG).show()
+                    scope.launch {
+                        isLoading = true
+                        try {
+                            viewModel.signUp(email, password)
+                                .onSuccess { onNavigateBack() }
+                                .onFailure {
+                                    Toast.makeText(
+                                        context,
+                                        it.localizedMessage ?: "Unknown error occurred",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
+                        } finally {
+                            isLoading = false
                         }
-                    )
+                    }
                 }
             }, modifier = modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(
                 containerColor = signInColor,
@@ -173,10 +194,26 @@ fun SignUpScreen(
                 modifier = modifier.fillMaxWidth()
             ) {
                 Text("Already have an Account?", color = Color.Black.copy(alpha = 0.4f), fontSize = 14.sp)
-                TextButton(onClick = { onNavigateToSignIn() }) {
+                TextButton(onClick = { if (!isLoading) onNavigateToSignIn() },
+                    enabled = !isLoading) {
                     Text("Sign In", color = signInColor, fontSize = 14.sp)
                 }
 
+            }
+        }
+        if (isLoading) {
+            Box(
+                Modifier
+                    .matchParentSize()
+                    .zIndex(1f)
+                    .background(Color.Black.copy(alpha = 0.12f))
+                    .clickable(
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() }
+                    ) { /* no-op, clicks are consumed */ },
+                contentAlignment = Alignment.Center
+            ) {
+                GooeySlimeLoader()
             }
         }
     }

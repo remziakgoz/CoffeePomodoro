@@ -9,9 +9,13 @@ import com.remziakgoz.coffeepomodoro.domain.model.UserStats
 import com.remziakgoz.coffeepomodoro.domain.use_cases.UserStatsUseCases
 import com.remziakgoz.coffeepomodoro.utils.getCurrentDayIndex
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.math.max
@@ -29,46 +33,58 @@ class DashboardViewModel @Inject constructor(
         observeUserStats()
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     private fun observeUserStats() {
-        val localId = preferenceManager.getCurrentUserLocalId()
-        if (localId == -1L) {
-            _uiState.value = DashboardUiState(isErrorMessage = "Local ID not found")
-            return
-        }
         viewModelScope.launch {
-           try {
-               userStatsUseCases.getUserStats(localId).collect { stats ->
-                   val calc = computeLevel(stats)
-
-                   val lastSeen = preferenceManager.getLastSeenLevel()
-                   val displayLevel = max(lastSeen, calc.meta.level)
-                   val justLeveled = displayLevel > lastSeen
-                   if (justLeveled) preferenceManager.setLastSeenLevel(displayLevel)
-
-                   val displayMeta = levelMeta[displayLevel - 1]
-                   val (nextTotal, remainCups, remainDays) = nextRequirementsForDisplayLevel(displayLevel, stats)
-                    
+            preferenceManager.localIdFlow
+                .flatMapLatest { localId ->
+                    if (localId == -1L) {
+                        _uiState.value = _uiState.value.copy(
+                            isLoading = true,
+                            isErrorMessage = "Waiting for account init..."
+                        )
+                        kotlinx.coroutines.flow.emptyFlow()
+                    } else {
+                        _uiState.value = _uiState.value.copy(
+                            isLoading = true,
+                            isErrorMessage = null
+                        )
+                        userStatsUseCases.getUserStats(localId)
+                    }
+                }
+                .catch { e ->
                     _uiState.value = _uiState.value.copy(
-                       stats = stats,
-                       achievements = mapAchievements(stats),
-                       quickDailyAvg = calcDailyAvg(stats),
                         isLoading = false,
-                       isErrorMessage = null,
-                       level = displayLevel,
-                       levelTitle = displayMeta.title,
-                       levelIconRes = displayMeta.iconRes,
-                       nextTargetTotal = nextTotal,
-                       remainingToNext = remainCups,
-                       remainingToNextDays = remainDays,
-                       justLeveledUp = justLeveled
-                   )
-               }
-            } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
-                   isErrorMessage = e.message ?: "An unexpected error occurred",
-                   isLoading = false
-               )
-           }
+                        isErrorMessage = e.message ?: "An unexpected error occurred"
+                    )
+                }
+                .collect { stats ->
+                    val calc = computeLevel(stats)
+
+                    val lastSeen = preferenceManager.getLastSeenLevel()
+                    val displayLevel = max(lastSeen, calc.meta.level)
+                    val justLeveled = displayLevel > lastSeen
+                    if (justLeveled) preferenceManager.setLastSeenLevel(displayLevel)
+
+                    val displayMeta = levelMeta[displayLevel - 1]
+                    val (nextTotal, remainCups, remainDays) =
+                        nextRequirementsForDisplayLevel(displayLevel, stats)
+
+                    _uiState.value = _uiState.value.copy(
+                        stats = stats,
+                        achievements = mapAchievements(stats),
+                        quickDailyAvg = calcDailyAvg(stats),
+                        isLoading = false,
+                        isErrorMessage = null,
+                        level = displayLevel,
+                        levelTitle = displayMeta.title,
+                        levelIconRes = displayMeta.iconRes,
+                        nextTargetTotal = nextTotal,
+                        remainingToNext = remainCups,
+                        remainingToNextDays = remainDays,
+                        justLeveledUp = justLeveled
+                    )
+                }
         }
     }
 

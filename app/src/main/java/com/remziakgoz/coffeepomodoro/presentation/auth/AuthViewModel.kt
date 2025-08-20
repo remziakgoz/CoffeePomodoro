@@ -11,56 +11,28 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(
     private val auth: FirebaseAuth,
-    private val preferenceManager: PreferenceManager,
-    private val userStatsUseCases: UserStatsUseCases,
     private val dataSyncManager: DataSyncManager
 ) : ViewModel() {
-    fun signIn(email: String, password: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
-        auth.signInWithEmailAndPassword(email, password).addOnSuccessListener {
-            CoroutineScope(Dispatchers.IO).launch {
-                userStatsUseCases.restoreUserStats()
-            }
-            onSuccess()
-        }.addOnFailureListener {
-            onError(it.localizedMessage ?: "Unknown error occurred")
-        }
+    suspend fun signIn(email: String, password: String): Result<Unit> = runCatching {
+        auth.signInWithEmailAndPassword(email, password).await()
+        dataSyncManager.performInitialSync()
     }
 
-    fun signUp(email: String, password: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
-        auth.createUserWithEmailAndPassword(email, password).addOnSuccessListener {
-            val firebaseUser = auth.currentUser
-            val firebaseUid = firebaseUser?.uid
-
-            if (firebaseUid != null) {
-                val localId = preferenceManager.getCurrentUserLocalId()
-                if (localId != -1L){
-                    CoroutineScope(Dispatchers.IO).launch {
-                       userStatsUseCases.getUserStats(localId).collect { userStats ->
-                           val updatedStats = userStats.copy(firebaseId = firebaseUid)
-                           userStatsUseCases.updateUserStats(updatedStats)
-                       }
-                    }
-                }
-            }
-
-            onSuccess()
-        }.addOnFailureListener {
-            onError(it.localizedMessage ?: "Unknown error occurred")
-        }
+    suspend fun signUp(email: String, password: String): Result<Unit> = runCatching {
+        auth.createUserWithEmailAndPassword(email, password).await()
+        dataSyncManager.performInitialSync()
     }
 
-    fun signInWithGoogle(idToken: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
+    suspend fun signInWithGoogle(idToken: String): Result<Unit> = runCatching {
         val credential = GoogleAuthProvider.getCredential(idToken, null)
-        auth.signInWithCredential(credential).addOnSuccessListener {
-            onSuccess()
-        }.addOnFailureListener {
-            onError(it.localizedMessage ?: "Unknown error occurred")
-        }
+        auth.signInWithCredential(credential).await()
+        dataSyncManager.performInitialSync()
     }
 
     fun logout(onComplete: () -> Unit) {

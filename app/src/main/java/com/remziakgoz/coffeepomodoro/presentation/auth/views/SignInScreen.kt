@@ -4,6 +4,9 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,6 +31,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,14 +45,17 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.remziakgoz.coffeepomodoro.R
 import com.remziakgoz.coffeepomodoro.presentation.auth.AuthViewModel
+import com.remziakgoz.coffeepomodoro.presentation.components.GooeySlimeLoader
 import com.remziakgoz.coffeepomodoro.presentation.ui.theme.Pacifico
 import com.remziakgoz.coffeepomodoro.presentation.ui.theme.signInColor
+import kotlinx.coroutines.launch
 
 
 @Composable
@@ -63,7 +70,9 @@ fun SignInScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
     val context = LocalContext.current
+    var isLoading by remember { mutableStateOf(false) }
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -73,13 +82,17 @@ fun SignInScreen(
             val idToken = account.idToken
 
             if (idToken != null) {
-                viewModel.signInWithGoogle(
-                    idToken = idToken,
-                    onSuccess = { onNavigateBack() },
-                    onError = { errorMsg ->
-                        Toast.makeText(context, errorMsg, Toast.LENGTH_LONG).show()
-                    }
-                )
+                scope.launch {
+                    viewModel.signInWithGoogle(idToken)
+                        .onSuccess { onNavigateBack() }
+                        .onFailure {
+                            Toast.makeText(
+                                context,
+                                it.localizedMessage ?: "Google sign-in failed",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                }
             }
 
         } catch (e: Exception) {
@@ -139,6 +152,7 @@ fun SignInScreen(
             TextField(
                 value = email,
                 onValueChange = { email = it },
+                enabled = !isLoading,
                 label = { Text("Email") },
                 leadingIcon = {
                     Icon(
@@ -162,6 +176,7 @@ fun SignInScreen(
             TextField(
                 value = password,
                 onValueChange = { password = it },
+                enabled = !isLoading,
                 label = { Text("Password") },
                 leadingIcon = {
                     Icon(
@@ -174,7 +189,9 @@ fun SignInScreen(
                         R.drawable.passwordhideicon
                     else
                         R.drawable.passwordshowicon
-                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                    IconButton(
+                        enabled = !isLoading,
+                        onClick = { passwordVisible = !passwordVisible }) {
                         Icon(
                             painter = painterResource(id = visibilityIcon),
                             contentDescription = "Password Toggle"
@@ -202,13 +219,23 @@ fun SignInScreen(
                         Toast.makeText(context, "Enter email and password!", Toast.LENGTH_LONG)
                             .show()
                     } else {
-                        viewModel.signIn(
-                            email, password,
-                            onSuccess = { onNavigateBack() },
-                            onError = { errorMsg ->
-                                Toast.makeText(context, errorMsg, Toast.LENGTH_LONG).show()
+                        scope.launch {
+                            isLoading = true
+                            try {
+                                viewModel.signIn(email, password)
+                                    .onSuccess { onNavigateBack() }
+                                    .onFailure {
+                                        Toast.makeText(
+                                            context,
+                                            it.localizedMessage ?: "Unknown error occurred",
+                                            Toast.LENGTH_LONG
+                                        ).show()
+                                    }
+                            } finally {
+                                isLoading = false
                             }
-                        )
+
+                        }
                     }
                 }, modifier = modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(
                     containerColor = signInColor,
@@ -226,8 +253,10 @@ fun SignInScreen(
 
             Button(
                 onClick = {
+                    isLoading = true
                     launcher.launch(googleSignInClient.signInIntent)
                 },
+                enabled = !isLoading,
                 modifier = modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(
                     containerColor = Color.White,
                     contentColor = Color.Black
@@ -260,13 +289,28 @@ fun SignInScreen(
                     color = Color.Black.copy(alpha = 0.4f),
                     fontSize = 14.sp
                 )
-                TextButton(onClick = { onNavigateToSignUp() }) {
+                TextButton(onClick = { if (!isLoading) onNavigateToSignUp() },
+                    enabled = !isLoading) {
                     Text("Sign Up", color = signInColor, fontSize = 14.sp)
                 }
 
             }
 
         }
-
+        if (isLoading) {
+            Box(
+                Modifier
+                    .matchParentSize()
+                    .zIndex(1f)
+                    .background(Color.Black.copy(alpha = 0.12f))
+                    .clickable(
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() }
+                    ) { /* no-op, clicks are consumed */ },
+                contentAlignment = Alignment.Center
+            ) {
+                GooeySlimeLoader()
+            }
+        }
     }
 }

@@ -2,7 +2,11 @@ package com.remziakgoz.coffeepomodoro.data.local.preferences
 
 import android.content.SharedPreferences
 import androidx.core.content.edit
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import javax.inject.Inject
+import javax.inject.Singleton
 
 class PreferenceManager @Inject constructor(
     private val sharedPreferences: SharedPreferences
@@ -16,6 +20,21 @@ class PreferenceManager @Inject constructor(
     }
 
     private fun lastSeenLevelKey(userId: Long) = "last_seen_level_$userId"
+
+    private val _localIdState =
+        MutableStateFlow(sharedPreferences.getLong(KEY_CURRENT_USER_LOCAL_ID, -1L))
+    val localIdFlow: StateFlow<Long> = _localIdState.asStateFlow()
+
+    //Listener
+    private val spListener = SharedPreferences.OnSharedPreferenceChangeListener { prefs, key ->
+        if (key == KEY_CURRENT_USER_LOCAL_ID) {
+            _localIdState.value = prefs.getLong(KEY_CURRENT_USER_LOCAL_ID, -1L)
+        }
+    }
+
+    init {
+        sharedPreferences.registerOnSharedPreferenceChangeListener(spListener)
+    }
 
     // Cycle Count
     fun saveCycleCount(count: Int) {
@@ -34,13 +53,14 @@ class PreferenceManager @Inject constructor(
         sharedPreferences.edit { putString(KEY_LAST_RESET_DATE, date) }
     }
 
-    fun clearDailyValue() {
+    fun clearCycleCount() {
         sharedPreferences.edit{ putInt(KEY_CYCLE_COUNT,0) }
     }
 
     //User Settings
     fun saveCurrentUserLocalId(id: Long) {
         sharedPreferences.edit{ putLong(KEY_CURRENT_USER_LOCAL_ID, id)}
+        _localIdState.value = id
     }
 
     fun getCurrentUserLocalId(): Long {
