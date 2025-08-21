@@ -4,12 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
-import com.remziakgoz.coffeepomodoro.data.local.preferences.PreferenceManager
 import com.remziakgoz.coffeepomodoro.data.sync.DataSyncManager
-import com.remziakgoz.coffeepomodoro.domain.use_cases.UserStatsUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
@@ -19,6 +17,16 @@ class AuthViewModel @Inject constructor(
     private val auth: FirebaseAuth,
     private val dataSyncManager: DataSyncManager
 ) : ViewModel() {
+
+    private val _isLoggedIn = MutableStateFlow(auth.currentUser != null)
+    val isLoggedIn: StateFlow<Boolean> = _isLoggedIn
+
+    private val listener = FirebaseAuth.AuthStateListener { fb ->
+        _isLoggedIn.value = fb.currentUser != null
+    }
+
+    init { auth.addAuthStateListener(listener) }
+    override fun onCleared() { auth.removeAuthStateListener(listener); super.onCleared() }
     suspend fun signIn(email: String, password: String): Result<Unit> = runCatching {
         auth.signInWithEmailAndPassword(email, password).await()
         dataSyncManager.performInitialSync()
@@ -35,15 +43,13 @@ class AuthViewModel @Inject constructor(
         dataSyncManager.performInitialSync()
     }
 
-    fun logout(onComplete: () -> Unit) {
+    fun logout() {
         viewModelScope.launch {
             // before backup
-            dataSyncManager.performFinalBackup()
-
+            runCatching { dataSyncManager.performFinalBackup() }
             // Firebase logout
             auth.signOut()
 
-            onComplete()
         }
     }
 

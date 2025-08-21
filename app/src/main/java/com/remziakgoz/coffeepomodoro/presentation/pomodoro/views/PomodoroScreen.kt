@@ -1,5 +1,6 @@
 package com.remziakgoz.coffeepomodoro.presentation.pomodoro.views
 
+import android.widget.Toast
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -36,13 +37,16 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.remziakgoz.coffeepomodoro.presentation.auth.AuthViewModel
 import com.remziakgoz.coffeepomodoro.presentation.components.CoffeeAnimation
 import com.remziakgoz.coffeepomodoro.presentation.components.CoffeeCoreButton
 import com.remziakgoz.coffeepomodoro.presentation.components.CoffeeMachineAnimation
+import com.remziakgoz.coffeepomodoro.presentation.components.LogoutDialog
 import com.remziakgoz.coffeepomodoro.presentation.components.NextStepButton
 import com.remziakgoz.coffeepomodoro.presentation.components.PomodoroWithCanvasClock
 import com.remziakgoz.coffeepomodoro.presentation.components.RestartButton
@@ -55,13 +59,17 @@ import com.remziakgoz.coffeepomodoro.presentation.pomodoro.PomodoroViewModel
 fun PomodoroScreen(
     modifier: Modifier,
     innerPadding: PaddingValues,
-    onNavigateToProfile: () -> Unit = {},
+    onNavigateToSignIn: () -> Unit = {},
     viewModel: PomodoroViewModel = hiltViewModel(),
-    appInitViewModel: AppInitViewModel = hiltViewModel()
+    appInitViewModel: AppInitViewModel = hiltViewModel(),
+    authViewModel: AuthViewModel = hiltViewModel()
 ) {
     val uiState = viewModel.uiState.collectAsState()
     var showResetDialog by remember { mutableStateOf(false) }
     var restartCounter by remember { mutableIntStateOf(0) }
+    var showLogOutDialog by remember { mutableStateOf(false) }
+    val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
+    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         appInitViewModel.syncEverything()
@@ -184,7 +192,7 @@ fun PomodoroScreen(
                                 Color.Black.copy(alpha = 0.7f)
                             )
                             .clickable {
-                                onNavigateToProfile()
+                                if (isLoggedIn) showLogOutDialog = true else onNavigateToSignIn()
                             }
                             .padding(8.dp),
                         contentAlignment = Alignment.Center
@@ -349,6 +357,16 @@ fun PomodoroScreen(
                     }
                 )
             }
+            LogoutDialog(
+                show = showLogOutDialog,
+                userEmail = uiState.value.stats.email,
+                onConfirmLogout = {
+                    authViewModel.logout()
+                    showLogOutDialog = false
+                    Toast.makeText(context, "Logged out", Toast.LENGTH_LONG).show()
+                },
+                onDismiss = {showLogOutDialog = false}
+            )
         }
     }
 }

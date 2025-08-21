@@ -83,7 +83,7 @@ fun LevelUpFlowOverlay(
     if (!visible) return
 
     var phase by remember(visible) { mutableStateOf(LevelUpPhase.Anim) }
-    val animStartMs = remember(visible) { System.currentTimeMillis() } // ✅ başlangıç zamanı
+    val animStartMs = remember(visible) { System.currentTimeMillis() }
 
     Box(
         modifier = Modifier
