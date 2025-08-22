@@ -8,7 +8,7 @@ import javax.inject.Inject
 class GetUserStatsUseCase @Inject constructor(
     private val repository: UserStatsRepository
 ) {
-    operator fun invoke(localId: Long): Flow<UserStats> {
-        return repository.getUserStatsFlow(localId)
+    operator fun invoke(): Flow<UserStats?> {
+        return repository.getUserStatsFlow()
     }
 }

@@ -2,6 +2,7 @@ package com.remziakgoz.coffeepomodoro.presentation.dashboard
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
 import com.remziakgoz.coffeepomodoro.R
 import com.remziakgoz.coffeepomodoro.data.local.preferences.PreferenceManager
 import com.remziakgoz.coffeepomodoro.domain.model.AchievementsUi
@@ -23,35 +24,35 @@ import kotlin.math.max
 @HiltViewModel
 class DashboardViewModel @Inject constructor(
     private val userStatsUseCases: UserStatsUseCases,
-    private val preferenceManager: PreferenceManager
+    private val preferenceManager: PreferenceManager,
+    private val auth: FirebaseAuth
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(DashboardUiState())
     val uiState : StateFlow<DashboardUiState> = _uiState.asStateFlow()
 
+    private val authStateListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
+        if (firebaseAuth.currentUser == null) {
+            // User logged out - let the flow handle the state naturally
+            android.util.Log.d("DashboardViewModel", "🚪 Auth state: User logged out - flow will handle state")
+            // Don't manually reset UI state here to preserve reactive binding
+        }
+    }
+
     init {
+        auth.addAuthStateListener(authStateListener)
         observeUserStats()
+    }
+
+    override fun onCleared() {
+        auth.removeAuthStateListener(authStateListener)
+        super.onCleared()
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun observeUserStats() {
         viewModelScope.launch {
-            preferenceManager.localIdFlow
-                .flatMapLatest { localId ->
-                    if (localId == -1L) {
-                        _uiState.value = _uiState.value.copy(
-                            isLoading = true,
-                            isErrorMessage = "Waiting for account init..."
-                        )
-                        kotlinx.coroutines.flow.emptyFlow()
-                    } else {
-                        _uiState.value = _uiState.value.copy(
-                            isLoading = true,
-                            isErrorMessage = null
-                        )
-                        userStatsUseCases.getUserStats(localId)
-                    }
-                }
+            userStatsUseCases.getUserStats()
                 .catch { e ->
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
@@ -59,6 +60,12 @@ class DashboardViewModel @Inject constructor(
                     )
                 }
                 .collect { stats ->
+                    if (stats == null) {
+                        // Handle null state - could be initial load or data cleared after logout
+                        android.util.Log.d("DashboardViewModel", "📭 UserStats is null - resetting dashboard")
+                        _uiState.value = DashboardUiState() // Reset to initial state
+                        return@collect
+                    }
                     val calc = computeLevel(stats)
 
                     val lastSeen = preferenceManager.getLastSeenLevel()
@@ -211,6 +218,12 @@ class DashboardViewModel @Inject constructor(
         if (cur.justLeveledUp) {
             _uiState.value = cur.copy(justLeveledUp = false)
         }
+    }
+
+    fun refreshDashboard() {
+        android.util.Log.d("DashboardViewModel", "🔄 Manual dashboard refresh triggered")
+        _uiState.value = DashboardUiState()
+        // Re-trigger data observation (flow will emit immediately if data exists)
     }
 
 } 

@@ -15,12 +15,18 @@ interface UserStatsDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertOrUpdate(userStats: UserStats): Long
 
-    @Query("SELECT * FROM UserStats WHERE localId = :localId LIMIT 1")
-    fun getUserStats(localId: Long): Flow<UserStats>
+    @Query("SELECT * FROM UserStats LIMIT 1")
+    fun getUserStatsFLow(): Flow<UserStats?>
+
+    @Query("SELECT * FROM UserStats LIMIT 1")
+    suspend fun getCurrentUserStats(): UserStats?
 
     @Update
     suspend fun updateUserStats(userStats: UserStats)
 
     @Delete
     suspend fun deleteUserStats(userStats: UserStats)
+
+    @Query("DELETE FROM UserStats")
+    suspend fun clearAllUserData()
 }

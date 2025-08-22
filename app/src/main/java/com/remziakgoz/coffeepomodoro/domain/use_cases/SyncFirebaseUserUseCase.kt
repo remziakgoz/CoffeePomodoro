@@ -8,19 +8,17 @@ import javax.inject.Inject
 
 class SyncFirebaseUserUseCase @Inject constructor(
     private val auth: FirebaseAuth,
-    private val preferenceManager: PreferenceManager,
     private val repository: UserStatsRepository
     ) {
     suspend operator fun invoke() {
         val firebaseUid = auth.currentUser?.uid ?: return
-        val localId = preferenceManager.getCurrentUserLocalId()
-        if (localId == -1L) return
 
-        val user = repository.getUserStatsFlow(localId).first()
+        val user = repository.getUserStatsFlow().first() ?: return
 
         if (user.firebaseId == null) {
             val updatedUser = user.copy(firebaseId = firebaseUid)
-            repository.updateUserStats(updatedUser)
+            // Use updateUserStatsWithoutBackup to prevent Firebase override during sync
+            repository.updateUserStatsWithoutBackup(updatedUser)
         }
     }
 }

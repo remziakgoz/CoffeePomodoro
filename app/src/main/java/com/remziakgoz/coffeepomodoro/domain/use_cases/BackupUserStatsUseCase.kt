@@ -1,5 +1,6 @@
 package com.remziakgoz.coffeepomodoro.domain.use_cases
 
+import com.google.firebase.auth.FirebaseAuth
 import com.remziakgoz.coffeepomodoro.data.local.preferences.PreferenceManager
 import com.remziakgoz.coffeepomodoro.data.remote.FirebaseUserStatsService
 import com.remziakgoz.coffeepomodoro.domain.repository.UserStatsRepository
@@ -8,17 +9,15 @@ import javax.inject.Inject
 
 class BackupUserStatsUseCase @Inject constructor(
     private val repository: UserStatsRepository,
-    private val preferenceManager: PreferenceManager,
-    private val firebaseService: FirebaseUserStatsService
+    private val firebaseService: FirebaseUserStatsService,
+    private val auth: FirebaseAuth
 ) {
     suspend operator fun invoke() {
-        val localId = preferenceManager.getCurrentUserLocalId()
-        if (localId == -1L) return
+        val currentUser = auth.currentUser ?: return
 
-        val userStats = repository.getUserStatsFlow(localId).first()
+        val userStats = repository.getUserStatsFlow().first() ?: return
 
-        if (userStats.firebaseId != null) {
-            firebaseService.backupUserStats(userStats)
-        }
+        val statWithFirebaseId = userStats.copy(firebaseId = currentUser.uid)
+        firebaseService.backupUserStats(statWithFirebaseId)
     }
 }

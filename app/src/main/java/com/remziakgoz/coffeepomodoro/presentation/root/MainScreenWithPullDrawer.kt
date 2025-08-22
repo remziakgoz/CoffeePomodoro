@@ -98,7 +98,8 @@ fun MainScreenWithPullDrawer(
             PomodoroScreen(
                 modifier = Modifier,
                 innerPadding = innerPadding,
-                onNavigateToProfile = onNavigateToProfile,
+                onNavigateToSignIn = onNavigateToProfile,
+                isProfileButtonEnabled = true,
                 viewModel = pomodoroViewModel
             )
         }

@@ -81,9 +81,17 @@ class MainActivity : ComponentActivity() {
                                 onNavigateToProfile = {
                                     val hasSeenWelcome = sharedPreferences.getBoolean("has_seen_welcome", false)
                                     if (hasSeenWelcome) {
-                                        navController.navigate("signin")
+                                        navController.navigate("signin") {
+                                            popUpTo("main") { saveState = true }
+                                            launchSingleTop = true
+                                            restoreState = true
+                                        }
                                     } else {
-                                        navController.navigate("welcome")
+                                        navController.navigate("welcome") {
+                                            popUpTo("main") { saveState = true }
+                                            launchSingleTop = true
+                                            restoreState = true
+                                        }
                                     }
                                 }
                             )
@@ -96,7 +104,8 @@ class MainActivity : ComponentActivity() {
                                 onContinue = {
                                     sharedPreferences.edit { putBoolean("has_seen_welcome", true) }
                                     navController.navigate("signin") {
-                                        popUpTo("main") { inclusive = false }
+                                        popUpTo("welcome") { inclusive = true }
+                                        launchSingleTop = true
                                     }
                                 }
                             )
@@ -112,6 +121,7 @@ class MainActivity : ComponentActivity() {
                                 onNavigateToSignUp = {
                                     navController.navigate("signup") {
                                         popUpTo("signin") { inclusive = true }
+                                        launchSingleTop = true
                                     }
                                 }
                             )
@@ -124,11 +134,13 @@ class MainActivity : ComponentActivity() {
                                 onNavigateBack = {
                                     navController.navigate("signin") {
                                         popUpTo("signup") { inclusive = true }
+                                        launchSingleTop = true
                                     }
                                 },
                                 onNavigateToSignIn = {
                                     navController.navigate("signin") {
                                         popUpTo("signup") { inclusive = true }
+                                        launchSingleTop = true
                                     }
                                 }
                             )

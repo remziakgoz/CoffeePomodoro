@@ -1,5 +1,6 @@
 package com.remziakgoz.coffeepomodoro.presentation.pomodoro.views
 
+import android.widget.Toast
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -36,13 +37,16 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.remziakgoz.coffeepomodoro.presentation.auth.AuthViewModel
 import com.remziakgoz.coffeepomodoro.presentation.components.CoffeeAnimation
 import com.remziakgoz.coffeepomodoro.presentation.components.CoffeeCoreButton
 import com.remziakgoz.coffeepomodoro.presentation.components.CoffeeMachineAnimation
+import com.remziakgoz.coffeepomodoro.presentation.components.LogoutDialog
 import com.remziakgoz.coffeepomodoro.presentation.components.NextStepButton
 import com.remziakgoz.coffeepomodoro.presentation.components.PomodoroWithCanvasClock
 import com.remziakgoz.coffeepomodoro.presentation.components.RestartButton
@@ -55,13 +59,18 @@ import com.remziakgoz.coffeepomodoro.presentation.pomodoro.PomodoroViewModel
 fun PomodoroScreen(
     modifier: Modifier,
     innerPadding: PaddingValues,
-    onNavigateToProfile: () -> Unit = {},
+    onNavigateToSignIn: () -> Unit = {},
+    isProfileButtonEnabled: Boolean = true,
     viewModel: PomodoroViewModel = hiltViewModel(),
-    appInitViewModel: AppInitViewModel = hiltViewModel()
+    appInitViewModel: AppInitViewModel = hiltViewModel(),
+    authViewModel: AuthViewModel = hiltViewModel()
 ) {
     val uiState = viewModel.uiState.collectAsState()
     var showResetDialog by remember { mutableStateOf(false) }
     var restartCounter by remember { mutableIntStateOf(0) }
+    var showLogOutDialog by remember { mutableStateOf(false) }
+    val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
+    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         appInitViewModel.syncEverything()
@@ -175,26 +184,32 @@ fun PomodoroScreen(
                         .padding(horizontal = 20.dp)
                 ) {
                     // User profile icon in top left - aligned with cycle indicator
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.CenterStart)
-                            .size(48.dp)
-                            .clip(CircleShape)
-                            .background(
-                                Color.Black.copy(alpha = 0.7f)
+                    if (isProfileButtonEnabled) {
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.CenterStart)
+                                .size(48.dp)
+                                .clip(CircleShape)
+                                .background(
+                                    Color.Black.copy(alpha = 0.7f)
+                                )
+                                .clickable {
+                                    if (isLoggedIn) {
+                                        showLogOutDialog = true
+                                    } else {
+                                        onNavigateToSignIn()
+                                    }
+                                }
+                                .padding(8.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Person,
+                                contentDescription = if (isLoggedIn) "User Profile - Logout" else "Sign In",
+                                tint = Color.White.copy(alpha = 0.9f),
+                                modifier = Modifier.size(24.dp)
                             )
-                            .clickable {
-                                onNavigateToProfile()
-                            }
-                            .padding(8.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Person,
-                            contentDescription = "User Profile",
-                            tint = Color.White.copy(alpha = 0.9f),
-                            modifier = Modifier.size(24.dp)
-                        )
+                        }
                     }
 
                     Box(
@@ -349,6 +364,16 @@ fun PomodoroScreen(
                     }
                 )
             }
+            LogoutDialog(
+                show = showLogOutDialog,
+                userEmail = uiState.value.stats.email,
+                onConfirmLogout = {
+                    authViewModel.logout()
+                    showLogOutDialog = false
+                    Toast.makeText(context, "Logged out", Toast.LENGTH_LONG).show()
+                },
+                onDismiss = {showLogOutDialog = false}
+            )
         }
     }
 }

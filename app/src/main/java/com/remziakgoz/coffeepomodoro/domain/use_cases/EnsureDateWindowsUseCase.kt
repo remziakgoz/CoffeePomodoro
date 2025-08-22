@@ -10,12 +10,10 @@ import kotlinx.coroutines.flow.firstOrNull
 import javax.inject.Inject
 
 class EnsureDateWindowsUseCase @Inject constructor(
-    private val preferenceManager: PreferenceManager,
     private val userStatsRepository: UserStatsRepository
 ) {
     suspend operator fun invoke() {
-        val localId = preferenceManager.getCurrentUserLocalId()
-        val stats = userStatsRepository.getUserStatsFlow(localId).firstOrNull() ?: return
+        val stats = userStatsRepository.getUserStatsFlow().firstOrNull() ?: return
 
         val today = getCurrentDateString()
         val monday = getMondayOfCurrentWeek()
@@ -67,7 +65,8 @@ class EnsureDateWindowsUseCase @Inject constructor(
         )
 
         if (updatedStats != stats) {
-            userStatsRepository.updateUserStats(updatedStats)
+            // Use updateUserStatsWithoutBackup to prevent Firebase override
+            userStatsRepository.updateUserStatsWithoutBackup(updatedStats)
         }
     }
 }
