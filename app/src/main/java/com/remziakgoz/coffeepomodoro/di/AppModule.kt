@@ -92,13 +92,12 @@ object AppModule {
             getUserStats = GetUserStatsUseCase(repository),
             updateUserStats = UpdateUserStatsUseCase(repository),
             initializeLocalUserUseCase = InitializeLocalUserUseCase(preferenceManager, repository),
-            syncFirebaseUser = SyncFirebaseUserUseCase(firebaseAuth, preferenceManager, repository),
+            syncFirebaseUser = SyncFirebaseUserUseCase(firebaseAuth, repository),
             backupUserStats = backupUserStatsUseCase,
             restoreUserStats = RestoreUserStatsUseCase(
                 firebaseAuth,
                 repository,
-                preferenceManager,
-                firebaseUserStatsService
+                firebaseService = firebaseUserStatsService
             ),
             ensureDateWindowsUseCase = ensureDateWindowsUseCase
         )
@@ -108,19 +107,20 @@ object AppModule {
     @Singleton
     fun provideUserStatsRepository(
         userStatsDao: UserStatsDao,
-        preferenceManager: PreferenceManager
+        firebaseService: FirebaseUserStatsService,
+        firebaseAuth: FirebaseAuth
     ): UserStatsRepository {
-        return UserStatsRepositoryImpl(userStatsDao)
+        return UserStatsRepositoryImpl(userStatsDao, firebaseService, firebaseAuth)
     }
 
     @Provides
     @Singleton
     fun provideDataSyncManager(
         auth: FirebaseAuth,
-        preferenceManager: PreferenceManager,
         userStatsUseCases: UserStatsUseCases,
+        firebaseService: FirebaseUserStatsService
     ): DataSyncManager {
-        return DataSyncManager(auth, preferenceManager, userStatsUseCases)
+        return DataSyncManager(auth, userStatsUseCases, firebaseService)
     }
 
 

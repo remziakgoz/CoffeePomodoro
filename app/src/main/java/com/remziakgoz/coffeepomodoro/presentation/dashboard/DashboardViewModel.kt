@@ -36,22 +36,7 @@ class DashboardViewModel @Inject constructor(
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun observeUserStats() {
         viewModelScope.launch {
-            preferenceManager.localIdFlow
-                .flatMapLatest { localId ->
-                    if (localId == -1L) {
-                        _uiState.value = _uiState.value.copy(
-                            isLoading = true,
-                            isErrorMessage = "Waiting for account init..."
-                        )
-                        kotlinx.coroutines.flow.emptyFlow()
-                    } else {
-                        _uiState.value = _uiState.value.copy(
-                            isLoading = true,
-                            isErrorMessage = null
-                        )
-                        userStatsUseCases.getUserStats(localId)
-                    }
-                }
+            userStatsUseCases.getUserStats()
                 .catch { e ->
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
@@ -59,6 +44,13 @@ class DashboardViewModel @Inject constructor(
                     )
                 }
                 .collect { stats ->
+                    if (stats == null) {
+                        _uiState.value = _uiState.value.copy(
+                            isLoading = true,
+                            isErrorMessage = "Waiting for user data..."
+                        )
+                        return@collect
+                    }
                     val calc = computeLevel(stats)
 
                     val lastSeen = preferenceManager.getLastSeenLevel()

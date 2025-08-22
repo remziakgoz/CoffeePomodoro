@@ -352,10 +352,10 @@ class PomodoroViewModel @Inject constructor(
                 )
                 preferenceManager.saveCycleCount(newCount)
 
-                val localId = preferenceManager.getCurrentUserLocalId()
                 viewModelScope.launch {
-                    val stats = userStatsUseCases.getUserStats(localId).first()
-                    updateDrinkStatsOnCycleComplete(stats)
+                    userStatsUseCases.getUserStats().first()?.let { stats ->
+                        updateDrinkStatsOnCycleComplete(stats)
+                    }
                 }
             }
             else -> {}
@@ -439,9 +439,8 @@ class PomodoroViewModel @Inject constructor(
                 )
                 preferenceManager.saveCycleCount(newCount)
 
-                val localId = preferenceManager.getCurrentUserLocalId()
                 viewModelScope.launch {
-                    userStatsUseCases.getUserStats(localId).firstOrNull()?.let { stats ->
+                    userStatsUseCases.getUserStats().firstOrNull()?.let { stats ->
                         updateDrinkStatsOnCycleComplete(stats)
                     }
                 }
@@ -460,9 +459,8 @@ class PomodoroViewModel @Inject constructor(
                 )
                 preferenceManager.saveCycleCount(newCount)
 
-                val localId = preferenceManager.getCurrentUserLocalId()
                 viewModelScope.launch {
-                    userStatsUseCases.getUserStats(localId).firstOrNull()?.let { stats ->
+                    userStatsUseCases.getUserStats().firstOrNull()?.let { stats ->
                         updateDrinkStatsOnCycleComplete(stats)
                     }
                 }

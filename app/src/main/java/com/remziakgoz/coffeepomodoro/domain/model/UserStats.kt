@@ -6,9 +6,10 @@ import androidx.room.PrimaryKey
 
 @Entity
 data class UserStats(
+    @PrimaryKey
+    val id: Long = 1L,
+
     // User info
-    @PrimaryKey(autoGenerate = true)
-    val localId: Long = 0,
     val name: String = "Guest",
     val email: String? = null,
     val firebaseId: String? = null,

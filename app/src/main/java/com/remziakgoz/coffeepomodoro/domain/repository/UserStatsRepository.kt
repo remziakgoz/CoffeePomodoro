@@ -4,7 +4,10 @@ import com.remziakgoz.coffeepomodoro.domain.model.UserStats
 import kotlinx.coroutines.flow.Flow
 
 interface UserStatsRepository {
-    fun getUserStatsFlow(localId: Long): Flow<UserStats>
+    fun getUserStatsFlow(): Flow<UserStats?>
     suspend fun updateUserStats(userStats: UserStats)
+    suspend fun updateUserStatsWithoutBackup(userStats: UserStats) 
     suspend fun insertUserStats(userStats: UserStats): Long
+    suspend fun insertUserStatsWithoutBackup(userStats: UserStats): Long
+    suspend fun getCurrentUserStats(): UserStats?
 }
