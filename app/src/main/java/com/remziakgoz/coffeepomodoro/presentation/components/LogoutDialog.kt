@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.sp
 fun LogoutDialog(
     show: Boolean,
     userEmail: String?,
+    isLoggingOut: Boolean = false,
     onConfirmLogout: () -> Unit,
     onDismiss: () -> Unit,
 ) {
@@ -44,7 +45,7 @@ fun LogoutDialog(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black.copy(alpha = 0.28f))
-            .clickable(enabled = true, onClick = onDismiss),
+            .clickable(enabled = !isLoggingOut, onClick = onDismiss),
         contentAlignment = Alignment.Center
     ) {
         OutlinedCard(
@@ -119,31 +120,48 @@ fun LogoutDialog(
 
                     Spacer(Modifier.height(16.dp))
 
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(48.dp)
-                            .clip(RoundedCornerShape(22.dp))
-                            .background(
-                                Brush.horizontalGradient(
-                                    listOf(Color(0xFFEA4335), Color(0xFFB71C1C))
-                                )
+                    if (isLoggingOut) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(48.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            GooeySlimeLoader(
+                                diameter = 32.dp,
+                                baseColor = Color(0xFFEA4335),
+                                accentColor = Color(0xFFB71C1C)
                             )
-                            .clickable { onConfirmLogout() },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text("LOG OUT", color = Color.White, fontWeight = FontWeight.SemiBold)
+                        }
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(48.dp)
+                                .clip(RoundedCornerShape(22.dp))
+                                .background(
+                                    Brush.horizontalGradient(
+                                        listOf(Color(0xFFEA4335), Color(0xFFB71C1C))
+                                    )
+                                )
+                                .clickable { onConfirmLogout() },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("LOG OUT", color = Color.White, fontWeight = FontWeight.SemiBold)
+                        }
                     }
 
                     Spacer(Modifier.height(4.dp))
                 }
 
-                GooeyCloseButton(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(top = 8.dp, end = 8.dp),
-                    onClick = onDismiss
-                )
+                if (!isLoggingOut) {
+                    GooeyCloseButton(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(top = 8.dp, end = 8.dp),
+                        onClick = onDismiss
+                    )
+                }
             }
         }
     }

@@ -41,6 +41,10 @@ class PomodoroViewModel @Inject constructor(
     private val breakTime = 4 * 1000L // 5 minutes
     private val longBreakTime = 8 * 60 * 1000L // 15 minutes
 
+    init {
+        observeUserStats()
+    }
+
     // Call this when screen is opened to initialize proper state
     fun initializeScreenState() {
         when (resetCycleCountIfNeededUseCase()) {
@@ -563,6 +567,25 @@ class PomodoroViewModel @Inject constructor(
         // Reset everything to initial state
         preferenceManager.saveCycleCount(0)
         _uiState.value = PomodoroUiState()
+    }
+
+    private fun observeUserStats() {
+        viewModelScope.launch {
+            userStatsUseCases.getUserStats()
+                .collect { stats ->
+                    // Update UI state with latest UserStats (including null after logout)
+                    val currentState = _uiState.value
+                    val newStats = stats ?: UserStats()
+                    
+                    // Also refresh cycle count from preferences after logout/login
+                    val currentCycleCount = preferenceManager.getCycleCount()
+                    
+                    _uiState.value = currentState.copy(
+                        stats = newStats,
+                        cycleCount = currentCycleCount
+                    )
+                }
+        }
     }
 
     override fun onCleared() {

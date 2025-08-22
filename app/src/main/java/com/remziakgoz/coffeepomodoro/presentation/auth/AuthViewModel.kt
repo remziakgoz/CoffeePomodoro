@@ -28,6 +28,9 @@ class AuthViewModel @Inject constructor(
     private val _isLoggedIn = MutableStateFlow(auth.currentUser != null)
     val isLoggedIn: StateFlow<Boolean> = _isLoggedIn
 
+    private val _isLoggingOut = MutableStateFlow(false)
+    val isLoggingOut: StateFlow<Boolean> = _isLoggingOut
+
     private var hasSyncedAfterLogin = false
 
     private val listener = FirebaseAuth.AuthStateListener { fb ->
@@ -41,7 +44,18 @@ class AuthViewModel @Inject constructor(
                 dataSyncManager.performInitialSync()
                 hasSyncedAfterLogin = true
             }
-        } else if (!isNowLoggedIn) {
+        } else if (!isNowLoggedIn && wasLoggedIn) {
+            // User just logged out - initialize offline mode
+            Log.d(TAG, "🚪 User logged out - initializing offline mode")
+            viewModelScope.launch {
+                try {
+                    userStatsUseCases.initializeLocalUserUseCase()
+                    userStatsUseCases.ensureDateWindowsUseCase()
+                    Log.d(TAG, "✅ Offline mode initialization completed")
+                } catch (e: Exception) {
+                    Log.e(TAG, "❌ Offline mode initialization failed", e)
+                }
+            }
             hasSyncedAfterLogin = false
         }
     }
@@ -70,21 +84,26 @@ class AuthViewModel @Inject constructor(
 
     fun logout() {
         viewModelScope.launch {
+            _isLoggingOut.value = true
             Log.d(TAG, "🚪 LOGOUT initiated")
             
-            // Step 1: Final backup before logout
-            Log.d(TAG, "💾 Performing final backup...")
-            runCatching { dataSyncManager.performFinalBackup() }
-            
-            // Step 2: Clear all local user data for privacy/security
-            Log.d(TAG, "🧹 Clearing local user data...")
-            runCatching { userStatsUseCases.clearAllUserData() }
-            
-            // Step 3: Firebase logout
-            Log.d(TAG, "🔥 Signing out from Firebase...")
-            auth.signOut()
-            
-            Log.d(TAG, "✅ LOGOUT completed successfully")
+            try {
+                // Step 1: Final backup before logout
+                Log.d(TAG, "💾 Performing final backup...")
+                runCatching { dataSyncManager.performFinalBackup() }
+                
+                // Step 2: Clear all local user data for privacy/security
+                Log.d(TAG, "🧹 Clearing local user data...")
+                runCatching { userStatsUseCases.clearAllUserData() }
+                
+                // Step 3: Firebase logout
+                Log.d(TAG, "🔥 Signing out from Firebase...")
+                auth.signOut()
+                
+                Log.d(TAG, "✅ LOGOUT completed successfully")
+            } finally {
+                _isLoggingOut.value = false
+            }
         }
     }
 
