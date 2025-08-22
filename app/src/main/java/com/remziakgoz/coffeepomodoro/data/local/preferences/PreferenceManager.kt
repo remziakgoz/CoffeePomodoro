@@ -98,8 +98,8 @@ class PreferenceManager @Inject constructor(
         android.util.Log.d("PreferenceManager", "🧹 CLEARING all user preferences")
         sharedPreferences.edit {
             remove(KEY_CURRENT_USER_LOCAL_ID)
-            remove(KEY_CYCLE_COUNT)
-            remove(KEY_LAST_RESET_DATE)
+            // DON'T remove KEY_CYCLE_COUNT - preserve for offline mode
+            // DON'T remove KEY_LAST_RESET_DATE - preserve for proper cycle reset logic
             remove(KEY_LAST_SEEN_LEVEL_GLOBAL)
             // Also clear any user-specific level keys
             val userId = getCurrentUserLocalId()

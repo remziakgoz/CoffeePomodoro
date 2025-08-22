@@ -70,6 +70,7 @@ fun PomodoroScreen(
     var restartCounter by remember { mutableIntStateOf(0) }
     var showLogOutDialog by remember { mutableStateOf(false) }
     val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
+    val isLoggingOut by authViewModel.isLoggingOut.collectAsState()
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
@@ -79,6 +80,14 @@ fun PomodoroScreen(
     // Initialize screen state when screen opens
     LaunchedEffect(Unit) {
         viewModel.initializeScreenState()
+    }
+
+    // Close logout dialog when logout completes
+    LaunchedEffect(isLoggingOut) {
+        if (!isLoggingOut && showLogOutDialog) {
+            showLogOutDialog = false
+            Toast.makeText(context, "Logged out", Toast.LENGTH_LONG).show()
+        }
     }
 
     // Define colors based on current state
@@ -367,10 +376,10 @@ fun PomodoroScreen(
             LogoutDialog(
                 show = showLogOutDialog,
                 userEmail = uiState.value.stats.email,
+                isLoggingOut = isLoggingOut,
                 onConfirmLogout = {
                     authViewModel.logout()
-                    showLogOutDialog = false
-                    Toast.makeText(context, "Logged out", Toast.LENGTH_LONG).show()
+                    // Don't close dialog immediately - let logout complete first
                 },
                 onDismiss = {showLogOutDialog = false}
             )
