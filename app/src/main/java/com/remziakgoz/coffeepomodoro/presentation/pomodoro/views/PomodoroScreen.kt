@@ -60,6 +60,7 @@ fun PomodoroScreen(
     modifier: Modifier,
     innerPadding: PaddingValues,
     onNavigateToSignIn: () -> Unit = {},
+    isProfileButtonEnabled: Boolean = true,
     viewModel: PomodoroViewModel = hiltViewModel(),
     appInitViewModel: AppInitViewModel = hiltViewModel(),
     authViewModel: AuthViewModel = hiltViewModel()
@@ -183,26 +184,32 @@ fun PomodoroScreen(
                         .padding(horizontal = 20.dp)
                 ) {
                     // User profile icon in top left - aligned with cycle indicator
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.CenterStart)
-                            .size(48.dp)
-                            .clip(CircleShape)
-                            .background(
-                                Color.Black.copy(alpha = 0.7f)
+                    if (isProfileButtonEnabled) {
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.CenterStart)
+                                .size(48.dp)
+                                .clip(CircleShape)
+                                .background(
+                                    Color.Black.copy(alpha = 0.7f)
+                                )
+                                .clickable {
+                                    if (isLoggedIn) {
+                                        showLogOutDialog = true
+                                    } else {
+                                        onNavigateToSignIn()
+                                    }
+                                }
+                                .padding(8.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Person,
+                                contentDescription = if (isLoggedIn) "User Profile - Logout" else "Sign In",
+                                tint = Color.White.copy(alpha = 0.9f),
+                                modifier = Modifier.size(24.dp)
                             )
-                            .clickable {
-                                if (isLoggedIn) showLogOutDialog = true else onNavigateToSignIn()
-                            }
-                            .padding(8.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Person,
-                            contentDescription = "User Profile",
-                            tint = Color.White.copy(alpha = 0.9f),
-                            modifier = Modifier.size(24.dp)
-                        )
+                        }
                     }
 
                     Box(

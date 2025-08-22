@@ -33,9 +33,9 @@ class DashboardViewModel @Inject constructor(
 
     private val authStateListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
         if (firebaseAuth.currentUser == null) {
-            // User logged out - reset dashboard immediately
-            android.util.Log.d("DashboardViewModel", "🚪 Auth state: User logged out - resetting dashboard")
-            _uiState.value = DashboardUiState()
+            // User logged out - let the flow handle the state naturally
+            android.util.Log.d("DashboardViewModel", "🚪 Auth state: User logged out - flow will handle state")
+            // Don't manually reset UI state here to preserve reactive binding
         }
     }
 
