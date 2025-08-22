@@ -94,4 +94,20 @@ class PreferenceManager @Inject constructor(
         }
     }
 
+    fun clearAllUserData() {
+        android.util.Log.d("PreferenceManager", "🧹 CLEARING all user preferences")
+        sharedPreferences.edit {
+            remove(KEY_CURRENT_USER_LOCAL_ID)
+            remove(KEY_CYCLE_COUNT)
+            remove(KEY_LAST_RESET_DATE)
+            remove(KEY_LAST_SEEN_LEVEL_GLOBAL)
+            // Also clear any user-specific level keys
+            val userId = getCurrentUserLocalId()
+            if (userId != -1L) {
+                remove(lastSeenLevelKey(userId))
+            }
+        }
+        _localIdState.value = -1L
+    }
+
 }

@@ -10,4 +10,5 @@ interface UserStatsRepository {
     suspend fun insertUserStats(userStats: UserStats): Long
     suspend fun insertUserStatsWithoutBackup(userStats: UserStats): Long
     suspend fun getCurrentUserStats(): UserStats?
+    suspend fun clearAllUserData()
 }

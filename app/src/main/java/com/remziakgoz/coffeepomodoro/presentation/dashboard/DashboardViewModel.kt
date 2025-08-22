@@ -2,6 +2,7 @@ package com.remziakgoz.coffeepomodoro.presentation.dashboard
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
 import com.remziakgoz.coffeepomodoro.R
 import com.remziakgoz.coffeepomodoro.data.local.preferences.PreferenceManager
 import com.remziakgoz.coffeepomodoro.domain.model.AchievementsUi
@@ -23,14 +24,29 @@ import kotlin.math.max
 @HiltViewModel
 class DashboardViewModel @Inject constructor(
     private val userStatsUseCases: UserStatsUseCases,
-    private val preferenceManager: PreferenceManager
+    private val preferenceManager: PreferenceManager,
+    private val auth: FirebaseAuth
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(DashboardUiState())
     val uiState : StateFlow<DashboardUiState> = _uiState.asStateFlow()
 
+    private val authStateListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
+        if (firebaseAuth.currentUser == null) {
+            // User logged out - reset dashboard immediately
+            android.util.Log.d("DashboardViewModel", "🚪 Auth state: User logged out - resetting dashboard")
+            _uiState.value = DashboardUiState()
+        }
+    }
+
     init {
+        auth.addAuthStateListener(authStateListener)
         observeUserStats()
+    }
+
+    override fun onCleared() {
+        auth.removeAuthStateListener(authStateListener)
+        super.onCleared()
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -45,10 +61,9 @@ class DashboardViewModel @Inject constructor(
                 }
                 .collect { stats ->
                     if (stats == null) {
-                        _uiState.value = _uiState.value.copy(
-                            isLoading = true,
-                            isErrorMessage = "Waiting for user data..."
-                        )
+                        // Handle null state - could be initial load or data cleared after logout
+                        android.util.Log.d("DashboardViewModel", "📭 UserStats is null - resetting dashboard")
+                        _uiState.value = DashboardUiState() // Reset to initial state
                         return@collect
                     }
                     val calc = computeLevel(stats)
@@ -203,6 +218,12 @@ class DashboardViewModel @Inject constructor(
         if (cur.justLeveledUp) {
             _uiState.value = cur.copy(justLeveledUp = false)
         }
+    }
+
+    fun refreshDashboard() {
+        android.util.Log.d("DashboardViewModel", "🔄 Manual dashboard refresh triggered")
+        _uiState.value = DashboardUiState()
+        // Re-trigger data observation (flow will emit immediately if data exists)
     }
 
 } 

@@ -16,7 +16,7 @@ interface UserStatsDao {
     suspend fun insertOrUpdate(userStats: UserStats): Long
 
     @Query("SELECT * FROM UserStats LIMIT 1")
-    fun getUserStatsFLow(): Flow<UserStats>
+    fun getUserStatsFLow(): Flow<UserStats?>
 
     @Query("SELECT * FROM UserStats LIMIT 1")
     suspend fun getCurrentUserStats(): UserStats?
@@ -26,4 +26,7 @@ interface UserStatsDao {
 
     @Delete
     suspend fun deleteUserStats(userStats: UserStats)
+
+    @Query("DELETE FROM UserStats")
+    suspend fun clearAllUserData()
 }

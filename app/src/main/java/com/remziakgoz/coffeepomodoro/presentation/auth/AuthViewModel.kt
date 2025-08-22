@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.remziakgoz.coffeepomodoro.data.sync.DataSyncManager
+import com.remziakgoz.coffeepomodoro.domain.use_cases.UserStatsUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,7 +17,8 @@ import javax.inject.Inject
 @HiltViewModel
 class AuthViewModel @Inject constructor(
     private val auth: FirebaseAuth,
-    private val dataSyncManager: DataSyncManager
+    private val dataSyncManager: DataSyncManager,
+    private val userStatsUseCases: UserStatsUseCases
 ) : ViewModel() {
 
     companion object {
@@ -68,11 +70,21 @@ class AuthViewModel @Inject constructor(
 
     fun logout() {
         viewModelScope.launch {
-            // before backup
+            Log.d(TAG, "🚪 LOGOUT initiated")
+            
+            // Step 1: Final backup before logout
+            Log.d(TAG, "💾 Performing final backup...")
             runCatching { dataSyncManager.performFinalBackup() }
-            // Firebase logout
+            
+            // Step 2: Clear all local user data for privacy/security
+            Log.d(TAG, "🧹 Clearing local user data...")
+            runCatching { userStatsUseCases.clearAllUserData() }
+            
+            // Step 3: Firebase logout
+            Log.d(TAG, "🔥 Signing out from Firebase...")
             auth.signOut()
-
+            
+            Log.d(TAG, "✅ LOGOUT completed successfully")
         }
     }
 

@@ -12,8 +12,10 @@ class InitializeLocalUserUseCase @Inject constructor(
     suspend operator fun invoke() {
         val localId = preferenceManager.getCurrentUserLocalId()
         if (localId == -1L) {
+            android.util.Log.d("InitializeLocalUserUseCase", "🆕 Creating Guest user WITHOUT backup")
             val guestUser = UserStats(name = "Guest")
-            val generatedId = userStatsRepository.insertUserStats(guestUser)
+            // Use insertUserStatsWithoutBackup to prevent Firebase override
+            val generatedId = userStatsRepository.insertUserStatsWithoutBackup(guestUser)
             preferenceManager.saveCurrentUserLocalId(generatedId)
         }
     }

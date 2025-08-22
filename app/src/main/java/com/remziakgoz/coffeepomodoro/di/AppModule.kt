@@ -16,6 +16,7 @@ import com.remziakgoz.coffeepomodoro.data.repository.UserStatsRepositoryImpl
 import com.remziakgoz.coffeepomodoro.data.sync.DataSyncManager
 import com.remziakgoz.coffeepomodoro.domain.repository.UserStatsRepository
 import com.remziakgoz.coffeepomodoro.domain.use_cases.BackupUserStatsUseCase
+import com.remziakgoz.coffeepomodoro.domain.use_cases.ClearAllUserDataUseCase
 import com.remziakgoz.coffeepomodoro.domain.use_cases.EnsureDateWindowsUseCase
 import com.remziakgoz.coffeepomodoro.domain.use_cases.GetUserStatsUseCase
 import com.remziakgoz.coffeepomodoro.domain.use_cases.InitializeLocalUserUseCase
@@ -99,7 +100,8 @@ object AppModule {
                 repository,
                 firebaseService = firebaseUserStatsService
             ),
-            ensureDateWindowsUseCase = ensureDateWindowsUseCase
+            ensureDateWindowsUseCase = ensureDateWindowsUseCase,
+            clearAllUserData = ClearAllUserDataUseCase(repository, preferenceManager)
         )
     }
 

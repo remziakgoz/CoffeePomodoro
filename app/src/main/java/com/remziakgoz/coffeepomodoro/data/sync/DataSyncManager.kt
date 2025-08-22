@@ -21,44 +21,44 @@ class DataSyncManager @Inject constructor(
     suspend fun performInitialSync() {
         Log.d(TAG, "🚀 STARTING Initial Sync Process")
         
-        // Step 1: Local user initialize
-        Log.d(TAG, "1️⃣ Initializing local user...")
-        userStatsUseCases.initializeLocalUserUseCase()
-
-        // Step 2: Firebase ID sync
-        Log.d(TAG, "2️⃣ Syncing Firebase user...")
-        userStatsUseCases.syncFirebaseUser()
-
-        // Step 3: Smart sync - Firebase data has priority
+        // Step 1: Check Firebase user first
         val firebaseUid = auth.currentUser?.uid ?: run {
-            Log.d(TAG, "❌ No Firebase user found, skipping cloud sync")
+            Log.d(TAG, "❌ No Firebase user found, performing offline initialization")
+            userStatsUseCases.initializeLocalUserUseCase()
             return
         }
 
-        Log.d(TAG, "3️⃣ Checking Firebase data for user: $firebaseUid")
+        Log.d(TAG, "1️⃣ Firebase user detected: $firebaseUid")
         
-        // First, fetch Firebase data
+        // Step 2: Fetch Firebase data FIRST (before any local operations)
+        Log.d(TAG, "2️⃣ PRIORITY: Fetching Firebase data first...")
         val firebaseUserStats = firebaseService.fetchUserStats(firebaseUid)
-        val currentLocalUser = userStatsUseCases.getUserStats().first()
         
-        Log.d(TAG, "📊 Local Data - Total: ${currentLocalUser?.totalCups ?: 0}, Weekly: ${currentLocalUser?.weeklyCups ?: 0}")
-
-        when {
-            firebaseUserStats != null -> {
-                // Firebase has data - Firebase wins
-                Log.d(TAG, "☁️ Firebase data found - RESTORING from cloud (Firebase priority)")
-                Log.d(TAG, "📊 Firebase Data - Total: ${firebaseUserStats.totalCups}, Weekly: ${firebaseUserStats.weeklyCups}")
-                userStatsUseCases.restoreUserStats.restoreFromData(firebaseUserStats)
-            }
-            currentLocalUser != null && (currentLocalUser.totalCups > 0 || currentLocalUser.weeklyCups > 0) -> {
-                // No Firebase data but local has data - backup to Firebase
-                Log.d(TAG, "📱 No Firebase data, local has data - BACKING UP to cloud")
+        if (firebaseUserStats != null) {
+            // Firebase has data - Firebase wins, restore immediately
+            Log.d(TAG, "☁️ Firebase data found - IMMEDIATE RESTORE (Firebase priority)")
+            Log.d(TAG, "📊 Firebase Data - Total: ${firebaseUserStats.totalCups}, Weekly: ${firebaseUserStats.weeklyCups}")
+            userStatsUseCases.restoreUserStats.restoreFromData(firebaseUserStats)
+        } else {
+            Log.d(TAG, "📭 No Firebase data found")
+            
+            // Step 3: Initialize local user (only if no Firebase data)
+            Log.d(TAG, "3️⃣ Initializing local user...")
+            userStatsUseCases.initializeLocalUserUseCase()
+            
+            // Step 4: Check if local has any meaningful data to backup
+            val currentLocalUser = userStatsUseCases.getUserStats().first()
+            Log.d(TAG, "📊 Local Data - Total: ${currentLocalUser?.totalCups ?: 0}, Weekly: ${currentLocalUser?.weeklyCups ?: 0}")
+            
+            if (currentLocalUser != null && (currentLocalUser.totalCups > 0 || currentLocalUser.weeklyCups > 0)) {
+                Log.d(TAG, "📱 Local has meaningful data - BACKING UP to cloud")
                 userStatsUseCases.backupUserStats()
             }
-            else -> {
-                Log.d(TAG, "📭 No data found in Firebase or locally - fresh start")
-            }
         }
+        
+        // Step 5: Sync Firebase ID (after data operations)
+        Log.d(TAG, "4️⃣ Syncing Firebase user ID...")
+        userStatsUseCases.syncFirebaseUser()
         
         Log.d(TAG, "✅ Initial Sync Process COMPLETED")
     }

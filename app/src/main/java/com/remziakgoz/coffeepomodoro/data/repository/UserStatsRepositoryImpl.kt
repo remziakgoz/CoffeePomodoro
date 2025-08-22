@@ -69,4 +69,9 @@ class UserStatsRepositoryImpl @Inject constructor(
             userStatsDao.getCurrentUserStats()
         }
     }
+
+    override suspend fun clearAllUserData() {
+        android.util.Log.d("UserStatsRepository", "🧹 CLEARING all user data from local database")
+        userStatsDao.clearAllUserData()
+    }
 }
