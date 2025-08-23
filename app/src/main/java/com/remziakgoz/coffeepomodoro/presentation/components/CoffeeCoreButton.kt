@@ -37,7 +37,6 @@ fun CoffeeCoreButton(modifier: Modifier = Modifier, onClick: () -> Unit, lottieA
         composition = composition,
         progress = { animatable.progress },
         modifier = modifier
-            .size(300.dp)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null

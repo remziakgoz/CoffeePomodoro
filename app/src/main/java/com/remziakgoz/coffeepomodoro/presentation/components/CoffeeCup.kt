@@ -10,6 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import com.airbnb.lottie.LottieProperty
 import com.airbnb.lottie.compose.LottieAnimation
@@ -22,7 +23,8 @@ import com.airbnb.lottie.compose.rememberLottieDynamicProperty
 fun CoffeeAnimation(
     modifier: Modifier = Modifier,
     innerPadding: PaddingValues,
-    animationProgress: Float
+    animationProgress: Float,
+    contentScale: ContentScale = ContentScale.Fit
 ) {
     val composition by rememberLottieComposition(LottieCompositionSpec.Asset("coffeeCup.json"))
     
@@ -84,8 +86,10 @@ fun CoffeeAnimation(
         LottieAnimation(
             composition = composition,
             progress = { animationProgress.coerceIn(0f, 1f) },
+            contentScale = contentScale,
+            clipToCompositionBounds = false,
             dynamicProperties = dynamicProperties,
-            modifier = Modifier.size(400.dp)
+            modifier = modifier
         )
     }
 }
