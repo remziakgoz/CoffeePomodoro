@@ -14,6 +14,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieClipSpec
@@ -28,7 +29,8 @@ fun CoffeeMachineAnimation(
     innerPadding: PaddingValues,
     shouldPlay: Boolean,
     shouldRestart: Boolean = false,
-    onRestartConsumed: () -> Unit = {}
+    onRestartConsumed: () -> Unit = {},
+    contentScale: ContentScale = ContentScale.Fit
 ) {
     val composition by rememberLottieComposition(LottieCompositionSpec.Asset("coffeeBrownPink.json"))
     val animatable = rememberLottieAnimatable()
@@ -87,7 +89,8 @@ fun CoffeeMachineAnimation(
         LottieAnimation(
             composition = composition,
             progress = { animatable.progress },
-            modifier = Modifier.size(400.dp)
+            contentScale = contentScale,
+            modifier = modifier.size(400.dp)
         )
     }
 }

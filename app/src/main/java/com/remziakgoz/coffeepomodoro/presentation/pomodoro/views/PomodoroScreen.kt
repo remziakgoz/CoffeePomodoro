@@ -1,19 +1,26 @@
 package com.remziakgoz.coffeepomodoro.presentation.pomodoro.views
 
+import android.annotation.SuppressLint
+import android.os.Build
 import android.widget.Toast
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -37,7 +44,10 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -72,6 +82,7 @@ fun PomodoroScreen(
     val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
     val isLoggingOut by authViewModel.isLoggingOut.collectAsState()
     val context = LocalContext.current
+    val isLandscape = isLandscape()
 
     LaunchedEffect(Unit) {
         appInitViewModel.syncEverything()
@@ -179,163 +190,364 @@ fun PomodoroScreen(
                 .fillMaxSize()
                 .background(gradientBrush)
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Spacer(modifier = modifier.padding(top = 20.dp))
-
-                Box(
+            if (isLandscape) {
+                // Landscape Layout - New 3-row structure
+                Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp)
+                        .fillMaxSize()
+                        .padding(innerPadding),
+                    verticalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    // User profile icon in top left - aligned with cycle indicator
-                    if (isProfileButtonEnabled) {
+                    // Top Row - Controls (FullMaxWidth)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp, vertical = 10.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // User profile icon - left
+                        if (isProfileButtonEnabled) {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        Color.Black.copy(alpha = 0.7f)
+                                    )
+                                    .clickable {
+                                        if (isLoggedIn) {
+                                            showLogOutDialog = true
+                                        } else {
+                                            onNavigateToSignIn()
+                                        }
+                                    }
+                                    .padding(6.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Person,
+                                    contentDescription = if (isLoggedIn) "User Profile - Logout" else "Sign In",
+                                    tint = Color.White.copy(alpha = 0.9f),
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        } else {
+                            Spacer(modifier = Modifier.size(40.dp))
+                        }
+
+                        // Cycle count - center
                         Box(
                             modifier = Modifier
-                                .align(Alignment.CenterStart)
-                                .size(48.dp)
-                                .clip(CircleShape)
+                                .clip(RoundedCornerShape(16.dp))
                                 .background(
                                     Color.Black.copy(alpha = 0.7f)
                                 )
-                                .clickable {
-                                    if (isLoggedIn) {
-                                        showLogOutDialog = true
-                                    } else {
-                                        onNavigateToSignIn()
-                                    }
-                                }
-                                .padding(8.dp),
+                                .clickable { showResetDialog = true }
+                                .padding(horizontal = 16.dp, vertical = 6.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Person,
-                                contentDescription = if (isLoggedIn) "User Profile - Logout" else "Sign In",
-                                tint = Color.White.copy(alpha = 0.9f),
-                                modifier = Modifier.size(24.dp)
+                            Text(
+                                text = "#${uiState.value.cycleCount + 1}",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = Color.White
                             )
                         }
+
+                        // Restart button - right
+                        RestartButton(
+                            modifier = Modifier
+                                .alpha(restartButtonAlpha)
+                                .size(40.dp),
+                            onClick = {
+                                viewModel.restart()
+                                restartCounter++
+                            }
+                        )
                     }
+
+                    // Middle Row - Clock, Button, Coffee (Left to Right)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth().
+                                padding(horizontal = 10.dp)
+                            .weight(1f),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // Digital Clock - Left
+                        Box(
+                            modifier = Modifier.weight(1f),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            PomodoroWithCanvasClock(
+                                remainingTime = uiState.value.remainingTime,
+                                fontSize = 120.sp
+                            )
+                        }
+
+                        // Start Button - Center
+                        Box(
+                            modifier = Modifier.weight(1f),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            when (uiState.value.currentState) {
+                                PomodoroState.Ready -> {
+                                    StartButton(
+                                        modifier = Modifier.size(260.dp),
+                                        onClick = { viewModel.toggleTimer() },
+                                        isRunning = uiState.value.isRunning
+                                    )
+                                }
+
+                                PomodoroState.Work -> {
+                                    StartButton(
+                                        modifier = Modifier.size(260.dp),
+                                        onClick = { viewModel.toggleTimer() },
+                                        isRunning = uiState.value.isRunning
+                                    )
+                                }
+
+                                PomodoroState.Paused -> {
+                                    StartButton(
+                                        modifier = Modifier.size(260.dp),
+                                        onClick = { viewModel.toggleTimer() },
+                                        isRunning = uiState.value.isRunning
+                                    )
+                                }
+
+                                PomodoroState.ShortBreak -> {
+                                    CoffeeCoreButton(
+                                        modifier = Modifier.size(200.dp),
+                                        onClick = { viewModel.toggleTimer() },
+                                        lottieAssetName = "coffeeTurned.json"
+                                    )
+                                }
+
+                                PomodoroState.LongBreak -> {
+                                    CoffeeCoreButton(
+                                        modifier = Modifier.size(200.dp),
+                                        onClick = { viewModel.toggleTimer() },
+                                        lottieAssetName = "coreButtonForLongBreak.json"
+                                    )
+                                }
+
+                                else -> {
+                                    // Handle other states if needed
+                                }
+                            }
+                        }
+
+                        // Coffee Animation - Right
+                        Box(
+                            modifier = Modifier.weight(1f),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            when (uiState.value.currentState) {
+                                PomodoroState.LongBreak -> {
+                                    CoffeeMachineAnimation(
+                                        modifier = modifier.size(700.dp),
+                                        innerPadding = innerPadding,
+                                        shouldPlay = uiState.value.isRunning,
+                                        shouldRestart = restartCounter > 0,
+                                        onRestartConsumed = { restartCounter = 0 },
+                                        contentScale = ContentScale.Crop
+                                    )
+                                }
+
+                                else ->
+                                    CoffeeAnimation(
+                                        modifier = modifier.size(1200.dp),
+                                        innerPadding = innerPadding,
+                                        animationProgress = uiState.value.animationProgress,
+                                        contentScale = ContentScale.Crop
+                                    )
+                            }
+                        }
+                    }
+
+                    // Bottom Row - Next Step Button (FullMaxWidth Center)
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp, vertical = 10.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        NextStepButton(
+                            modifier = Modifier.alpha(nextStepButtonAlpha),
+                            onClick = { viewModel.nextStep() },
+                            enabled = isNextStepEnabled
+                        )
+                    }
+                }
+            } else {
+                // Portrait Layout - Original vertical arrangement
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Spacer(modifier = Modifier.height(20.dp))
 
                     Box(
                         modifier = Modifier
-                            .align(Alignment.Center)
-                            .clip(RoundedCornerShape(20.dp))
-                            .background(
-                                Color.Black.copy(alpha = 0.7f)
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp)
+                    ) {
+                        // User profile icon in top left - aligned with cycle indicator
+                        if (isProfileButtonEnabled) {
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.CenterStart)
+                                    .size(48.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        Color.Black.copy(alpha = 0.7f)
+                                    )
+                                    .clickable {
+                                        if (isLoggedIn) {
+                                            showLogOutDialog = true
+                                        } else {
+                                            onNavigateToSignIn()
+                                        }
+                                    }
+                                    .padding(8.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Person,
+                                    contentDescription = if (isLoggedIn) "User Profile - Logout" else "Sign In",
+                                    tint = Color.White.copy(alpha = 0.9f),
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .clip(RoundedCornerShape(20.dp))
+                                .background(
+                                    Color.Black.copy(alpha = 0.7f)
+                                )
+                                .clickable { showResetDialog = true }
+                                .padding(horizontal = 20.dp, vertical = 8.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "#${uiState.value.cycleCount + 1}",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = Color.White
                             )
-                            .clickable { showResetDialog = true }
-                            .padding(horizontal = 20.dp, vertical = 8.dp),
+                        }
+
+                        // Restart button in top right - absolute positioning
+                        RestartButton(
+                            modifier = Modifier
+                                .align(Alignment.CenterEnd)
+                                .alpha(restartButtonAlpha),
+                            onClick = {
+                                viewModel.restart()
+                                restartCounter++
+                            }
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    // Show the digital clock with current remaining time
+                    PomodoroWithCanvasClock(remainingTime = uiState.value.remainingTime)
+
+                    // Coffee animation with timer progress and Coffee machine animation when in long break
+                    when (uiState.value.currentState) {
+                        PomodoroState.LongBreak -> {
+                            CoffeeMachineAnimation(
+                                modifier = modifier.size(400.dp),
+                                innerPadding = innerPadding,
+                                shouldPlay = uiState.value.isRunning,
+                                shouldRestart = restartCounter > 0,
+                                onRestartConsumed = { restartCounter = 0 },
+                            )
+                        }
+
+                        else ->
+                            CoffeeAnimation(
+                                modifier = modifier.size(400.dp),
+                                innerPadding = innerPadding,
+                                animationProgress = uiState.value.animationProgress
+                            )
+                    }
+
+                    Spacer(modifier = Modifier.height(5.dp))
+
+                    // Button layout with start/pause button perfectly centered and next step button on the right
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = "#${uiState.value.cycleCount + 1}",
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = Color.White
+                        // Main button perfectly centered
+                        when (uiState.value.currentState) {
+                            PomodoroState.Ready -> {
+                                StartButton(
+                                    modifier = Modifier.size(300.dp),
+                                    onClick = { viewModel.toggleTimer() },
+                                    isRunning = uiState.value.isRunning
+                                )
+                            }
+
+                            PomodoroState.Work -> {
+                                StartButton(
+                                    modifier = Modifier.size(300.dp),
+                                    onClick = { viewModel.toggleTimer() },
+                                    isRunning = uiState.value.isRunning
+                                )
+                            }
+
+                            PomodoroState.Paused -> {
+                                StartButton(
+                                    modifier = Modifier.size(300.dp),
+                                    onClick = { viewModel.toggleTimer() },
+                                    isRunning = uiState.value.isRunning
+                                )
+                            }
+
+                            PomodoroState.ShortBreak -> {
+                                CoffeeCoreButton(
+                                    modifier = Modifier.size(300.dp),
+                                    onClick = { viewModel.toggleTimer() },
+                                    lottieAssetName = "coffeeTurned.json"
+                                )
+                            }
+
+                            PomodoroState.LongBreak -> {
+                                CoffeeCoreButton(
+                                    modifier = Modifier.size(300.dp),
+                                    onClick = { viewModel.toggleTimer() },
+                                    lottieAssetName = "coreButtonForLongBreak.json"
+                                )
+                            }
+
+                            else -> {
+                                // Handle other states if needed
+                            }
+                        }
+
+                        // Next step button positioned on the right
+                        NextStepButton(
+                            modifier = Modifier
+                                .align(Alignment.CenterEnd)
+                                .padding(end = 20.dp)
+                                .alpha(nextStepButtonAlpha),
+                            onClick = { viewModel.nextStep() },
+                            enabled = isNextStepEnabled
                         )
                     }
 
-                    // Restart button in top right - absolute positioning
-                    RestartButton(
-                        modifier = Modifier
-                            .align(Alignment.CenterEnd)
-                            .alpha(restartButtonAlpha),
-                        onClick = {
-                            viewModel.restart()
-                            restartCounter++
-                        }
-                    )
+                    Spacer(modifier = Modifier.height(5.dp))
                 }
-
-                Spacer(modifier = Modifier.padding(20.dp))
-
-                // Show the digital clock with current remaining time
-                PomodoroWithCanvasClock(remainingTime = uiState.value.remainingTime)
-
-                // Coffee animation with timer progress and Coffee machine animation when in long break
-                when (uiState.value.currentState) {
-                    PomodoroState.LongBreak -> {
-                        CoffeeMachineAnimation(
-                            innerPadding = innerPadding,
-                            shouldPlay = uiState.value.isRunning,
-                            shouldRestart = restartCounter > 0,
-                            onRestartConsumed = { restartCounter = 0 }
-                        )
-                    }
-
-                    else ->
-                        CoffeeAnimation(
-                            innerPadding = innerPadding,
-                            animationProgress = uiState.value.animationProgress
-                        )
-                }
-
-                Spacer(modifier = Modifier.padding(5.dp))
-
-                // Button layout with start/pause button perfectly centered and next step button on the right
-                Box(
-                    modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    // Main button perfectly centered
-                    when (uiState.value.currentState) {
-                        PomodoroState.Ready -> {
-                            StartButton(
-                                onClick = { viewModel.toggleTimer() },
-                                isRunning = uiState.value.isRunning
-                            )
-                        }
-
-                        PomodoroState.Work -> {
-                            StartButton(
-                                onClick = { viewModel.toggleTimer() },
-                                isRunning = uiState.value.isRunning
-                            )
-                        }
-
-                        PomodoroState.Paused -> {
-                            StartButton(
-                                onClick = { viewModel.toggleTimer() },
-                                isRunning = uiState.value.isRunning
-                            )
-                        }
-
-                        PomodoroState.ShortBreak -> {
-                            CoffeeCoreButton(
-                                onClick = { viewModel.toggleTimer() },
-                                lottieAssetName = "coffeeTurned.json"
-                            )
-                        }
-
-                        PomodoroState.LongBreak -> {
-                            CoffeeCoreButton(
-                                onClick = { viewModel.toggleTimer() },
-                                lottieAssetName = "coreButtonForLongBreak.json"
-                            )
-                        }
-
-                        else -> {
-                            // Handle other states if needed
-                        }
-                    }
-
-                    // Next step button positioned on the right
-                    NextStepButton(
-                        modifier = Modifier
-                            .align(Alignment.CenterEnd)
-                            .padding(end = 20.dp)
-                            .alpha(nextStepButtonAlpha),
-                        onClick = { viewModel.nextStep() },
-                        enabled = isNextStepEnabled
-                    )
-                }
-
-                Spacer(modifier = Modifier.padding(5.dp))
             }
 
             // Reset confirmation dialog

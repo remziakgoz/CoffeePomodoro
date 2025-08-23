@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import com.remziakgoz.coffeepomodoro.R
 
@@ -23,7 +24,8 @@ private val londrinaOutlineRegular = FontFamily(
 @Composable
 fun PomodoroWithCanvasClock(
     remainingTime: Long,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    fontSize: TextUnit = 110.sp
 ) {
     val minutes = (remainingTime / 1000 / 60).toInt()
     val seconds = (remainingTime / 1000 % 60).toInt()
@@ -39,7 +41,7 @@ fun PomodoroWithCanvasClock(
         Text(
             text = timeString,
             fontFamily = londrinaOutlineRegular,
-            fontSize = 110.sp,
+            fontSize = fontSize,
             color = Color.White,
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth()

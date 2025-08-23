@@ -74,7 +74,6 @@ fun StartButton(
         composition = composition,
         progress = { progress },
         modifier = modifier
-            .size(300.dp)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() }, 
                 indication = null
