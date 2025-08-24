@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -23,25 +24,35 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.remziakgoz.coffeepomodoro.R
 import com.remziakgoz.coffeepomodoro.presentation.ui.theme.CoffeePrimaryLight
+import com.remziakgoz.coffeepomodoro.presentation.root.isLandscape
 
 @Composable
 fun CoffeeProgressCard(modifier: Modifier = Modifier, counter: Int, imageId: Int, dayProgress : String) {
+    val isLandscapeMode = isLandscape()
+    val cardSize = if (isLandscapeMode) 160.dp to 240.dp else 120.dp to 200.dp
+    val imageSize = if (isLandscapeMode) 80.dp else null
+    val titleFontSize = if (isLandscapeMode) 24.sp else 30.sp
+    val counterFontSize = if (isLandscapeMode) 32.sp else 25.sp
+    val cardPadding = if (isLandscapeMode) 20.dp else 16.dp
 
     Card(
         modifier = modifier
-            .size(width = 120.dp, height = 200.dp)
+            .size(width = cardSize.first, height = cardSize.second)
             .clip(RoundedCornerShape(32.dp))
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
-            modifier = modifier.background(color = Color(0xFFE3CBA5)).padding(16.dp)
+            modifier = modifier
+                .fillMaxSize()
+                .background(color = Color(0xFFE3CBA5))
+                .padding(cardPadding)
 
         ) {
             Text(
                 text = dayProgress,
                 textAlign = TextAlign.Center,
-                fontSize = 30.sp,
+                fontSize = titleFontSize,
                 fontWeight = FontWeight.W400,
                 color = CoffeePrimaryLight.copy(
                     alpha = 0.8f
@@ -50,12 +61,13 @@ fun CoffeeProgressCard(modifier: Modifier = Modifier, counter: Int, imageId: Int
             Spacer(modifier = modifier.padding(5.dp))
             Image(
                 painter = painterResource(id = imageId),
-                contentDescription = "Coffee Cup"
+                contentDescription = "Coffee Cup",
+                modifier = if (imageSize != null) modifier.size(imageSize) else modifier
             )
             Spacer(modifier = modifier.padding(5.dp))
             Text(
                 text = "$counter",
-                fontSize = 25.sp,
+                fontSize = counterFontSize,
                 fontWeight = FontWeight.Bold,
                 color = CoffeePrimaryLight.copy(
                     alpha = 0.8f

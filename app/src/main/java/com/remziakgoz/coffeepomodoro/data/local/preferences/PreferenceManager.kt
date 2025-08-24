@@ -17,9 +17,11 @@ class PreferenceManager @Inject constructor(
         private const val KEY_CURRENT_USER_LOCAL_ID = "current_user_local_id"
         private const val KEY_CYCLE_COUNT = "cycle_count"
         private const val KEY_LAST_RESET_DATE = "last_reset_date"
+        private const val KEY_PENDING_LEVEL_UP_GLOBAL = "pending_level_up_global"
     }
 
     private fun lastSeenLevelKey(userId: Long) = "last_seen_level_$userId"
+    private fun pendingLevelUpKey(userId: Long) = "pending_level_up_$userId"
 
     private val _localIdState =
         MutableStateFlow(sharedPreferences.getLong(KEY_CURRENT_USER_LOCAL_ID, -1L))
@@ -94,6 +96,33 @@ class PreferenceManager @Inject constructor(
         }
     }
 
+    fun getPendingLevelUp(): Boolean {
+        val userId = getCurrentUserLocalId()
+        return if (userId == -1L) {
+            sharedPreferences.getBoolean(KEY_PENDING_LEVEL_UP_GLOBAL, false)
+        } else {
+            sharedPreferences.getBoolean(pendingLevelUpKey(userId), false)
+        }
+    }
+
+    fun setPendingLevelUp(hasPendingLevelUp: Boolean) {
+        val userId = getCurrentUserLocalId()
+        sharedPreferences.edit {
+            if (userId == -1L) {
+                putBoolean(KEY_PENDING_LEVEL_UP_GLOBAL, hasPendingLevelUp)
+            } else {
+                putBoolean(pendingLevelUpKey(userId), hasPendingLevelUp)
+            }
+        }
+    }
+
+    fun clearPendingLevelUpForCurrentUser() {
+        val userId = getCurrentUserLocalId()
+        if (userId != -1L) {
+            sharedPreferences.edit { remove(pendingLevelUpKey(userId)) }
+        }
+    }
+
     fun clearAllUserData() {
         android.util.Log.d("PreferenceManager", "🧹 CLEARING all user preferences")
         sharedPreferences.edit {
@@ -101,10 +130,12 @@ class PreferenceManager @Inject constructor(
             // DON'T remove KEY_CYCLE_COUNT - preserve for offline mode
             // DON'T remove KEY_LAST_RESET_DATE - preserve for proper cycle reset logic
             remove(KEY_LAST_SEEN_LEVEL_GLOBAL)
+            remove(KEY_PENDING_LEVEL_UP_GLOBAL)
             // Also clear any user-specific level keys
             val userId = getCurrentUserLocalId()
             if (userId != -1L) {
                 remove(lastSeenLevelKey(userId))
+                remove(pendingLevelUpKey(userId))
             }
         }
         _localIdState.value = -1L
