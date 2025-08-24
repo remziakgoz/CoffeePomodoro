@@ -15,6 +15,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -47,11 +48,19 @@ import com.remziakgoz.coffeepomodoro.presentation.root.isLandscape
 fun DashboardScreen(
     modifier: Modifier = Modifier,
     onSwipeToPomodoroScreen: () -> Unit,
-    dashboardViewModel: DashboardViewModel = hiltViewModel()
+    dashboardViewModel: DashboardViewModel = hiltViewModel(),
+    isDashboardVisible: Boolean = true
 ) {
     val uiState by dashboardViewModel.uiState.collectAsState()
     var showLevelDialog by remember { mutableStateOf(false) }
     val isLandscapeMode = isLandscape()
+
+    // Trigger level up animation when Dashboard becomes visible
+    LaunchedEffect(isDashboardVisible) {
+        if (isDashboardVisible) {
+            dashboardViewModel.onDashboardBecameVisible()
+        }
+    }
 
     Box(
         modifier = modifier
@@ -214,7 +223,7 @@ fun DashboardScreen(
             Spacer(modifier = modifier.size(24.dp))
         }
 
-        if (uiState.justLeveledUp) {
+        if (uiState.shouldShowLevelUpAnimation) {
             LevelUpFlowOverlay(
                 ui = uiState,
                 visible = true,

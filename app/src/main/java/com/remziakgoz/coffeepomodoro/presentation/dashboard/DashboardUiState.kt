@@ -16,6 +16,7 @@ data class DashboardUiState(
     val nextTargetTotal: Int = 50,
     val remainingToNext: Int = 50,
     val justLeveledUp: Boolean = false,
+    val shouldShowLevelUpAnimation: Boolean = false,
     val remainingToNextDays: Int = 0
 
 )

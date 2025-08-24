@@ -20,6 +20,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -53,7 +54,12 @@ fun MainScreenWithPullDrawer(
     val openThreshold = screenWidthPx * 0.35f
     val velocityThreshold = 1800f // px/s
 
-    val offsetX = remember { Animatable(closedX) }
+    val isOnDashboard = rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
+    
+    val offsetX = remember { 
+        Animatable(if (isOnDashboard.value) openX else closedX) 
+    }
+    
     val isOpen by remember {
         derivedStateOf { offsetX.targetValue == openX || offsetX.value < (openX / 2f) }
     }
@@ -68,6 +74,8 @@ fun MainScreenWithPullDrawer(
                 stiffness = Spring.StiffnessMedium
             )
         )
+        // Update saved state
+        isOnDashboard.value = (target == openX)
     }
 
     Box(
@@ -132,7 +140,8 @@ fun MainScreenWithPullDrawer(
             DashboardScreen(
                 modifier = Modifier,
                 dashboardViewModel = dashboardViewModel,
-                onSwipeToPomodoroScreen = { scope.launch { animateTo(closedX) } }
+                onSwipeToPomodoroScreen = { scope.launch { animateTo(closedX) } },
+                isDashboardVisible = isOpen
             )
         }
 

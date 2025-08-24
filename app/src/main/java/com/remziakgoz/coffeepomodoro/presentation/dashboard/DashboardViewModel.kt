@@ -71,7 +71,16 @@ class DashboardViewModel @Inject constructor(
                     val lastSeen = preferenceManager.getLastSeenLevel()
                     val displayLevel = max(lastSeen, calc.meta.level)
                     val justLeveled = displayLevel > lastSeen
-                    if (justLeveled) preferenceManager.setLastSeenLevel(displayLevel)
+                    val hasPendingLevelUp = preferenceManager.getPendingLevelUp()
+                    
+                    // Check if there's a level up (either new or pending from previous session)
+                    val shouldShowLevelUp = justLeveled || hasPendingLevelUp
+                    
+                    if (justLeveled) {
+                        preferenceManager.setLastSeenLevel(displayLevel)
+                        // Set pending level up flag - will be cleared when animation is consumed
+                        preferenceManager.setPendingLevelUp(true)
+                    }
 
                     val displayMeta = levelMeta[displayLevel - 1]
                     val (nextTotal, remainCups, remainDays) =
@@ -89,7 +98,8 @@ class DashboardViewModel @Inject constructor(
                         nextTargetTotal = nextTotal,
                         remainingToNext = remainCups,
                         remainingToNextDays = remainDays,
-                        justLeveledUp = justLeveled
+                        justLeveledUp = shouldShowLevelUp,
+                        shouldShowLevelUpAnimation = false
                     )
                 }
         }
@@ -215,8 +225,20 @@ class DashboardViewModel @Inject constructor(
 
     fun consumeLevelUpAnimation() {
         val cur = _uiState.value
-        if (cur.justLeveledUp) {
-            _uiState.value = cur.copy(justLeveledUp = false)
+        if (cur.shouldShowLevelUpAnimation) {
+            // Clear the pending level up flag from preferences
+            preferenceManager.setPendingLevelUp(false)
+            _uiState.value = cur.copy(
+                justLeveledUp = false,
+                shouldShowLevelUpAnimation = false
+            )
+        }
+    }
+
+    fun onDashboardBecameVisible() {
+        val cur = _uiState.value
+        if (cur.justLeveledUp && !cur.shouldShowLevelUpAnimation) {
+            _uiState.value = cur.copy(shouldShowLevelUpAnimation = true)
         }
     }
 
