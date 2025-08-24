@@ -1,4 +1,4 @@
-package com.remziakgoz.coffeepomodoro.presentation.pomodoro.views
+package com.remziakgoz.coffeepomodoro.presentation.root
 
 import android.os.Build
 import androidx.compose.runtime.Composable

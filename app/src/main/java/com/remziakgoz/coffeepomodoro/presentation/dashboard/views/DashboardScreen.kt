@@ -41,6 +41,7 @@ import com.remziakgoz.coffeepomodoro.presentation.components.LevelUpFlowOverlay
 import com.remziakgoz.coffeepomodoro.presentation.components.QuickStatsSection
 import com.remziakgoz.coffeepomodoro.presentation.components.LevelsDialogV3
 import com.remziakgoz.coffeepomodoro.presentation.dashboard.DashboardViewModel
+import com.remziakgoz.coffeepomodoro.presentation.root.isLandscape
 
 @Composable
 fun DashboardScreen(
@@ -50,6 +51,7 @@ fun DashboardScreen(
 ) {
     val uiState by dashboardViewModel.uiState.collectAsState()
     var showLevelDialog by remember { mutableStateOf(false) }
+    val isLandscapeMode = isLandscape()
 
     Box(
         modifier = modifier
@@ -66,14 +68,18 @@ fun DashboardScreen(
                 .verticalScroll(rememberScrollState())
         ) {
 
+            // Current Level Cup section
             Box(
                 modifier = modifier
                     .fillMaxWidth()
-                    .padding(16.dp)
+                    .padding(
+                        if (isLandscapeMode) 4.dp else 4.dp
+                    )
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center,
+                    horizontalArrangement = Arrangement.Start,
+                    modifier = modifier.fillMaxWidth()
                 ) {
                     Image(
                         painterResource(id = uiState.levelIconRes),
@@ -92,10 +98,6 @@ fun DashboardScreen(
                         lineHeight = 26.sp
                     )
                 }
-
-                if (showLevelDialog) {
-                    LevelsDialogV3(true, { showLevelDialog = false }, uiState)
-                }
             }
 
             Text(
@@ -103,37 +105,75 @@ fun DashboardScreen(
                 fontSize = 40.sp,
                 fontWeight = FontWeight.Medium,
                 color = Color.White.copy(alpha = 0.8f),
-                modifier = modifier.padding(start = 20.dp, top = 30.dp)
+                modifier = modifier
+                    .fillMaxWidth()
+                    .padding(
+                        start = if (isLandscapeMode) 0.dp else 20.dp,
+                        top = if (isLandscapeMode) 0.dp else 30.dp
+                    ),
+                textAlign = if (isLandscapeMode) androidx.compose.ui.text.style.TextAlign.Center else androidx.compose.ui.text.style.TextAlign.Start
             )
 
-            Spacer(modifier = modifier.size(22.dp))
+            Spacer(modifier = modifier.size(if (isLandscapeMode) 12.dp else 22.dp))
 
+            // Coffee Progress Cards section with landscape adaptation
             Box(
                 modifier = modifier.fillMaxWidth(),
                 contentAlignment = Alignment.Center
             ) {
-                Row(
-                    modifier = modifier.padding(horizontal = 4.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    CoffeeProgressCard(
-                        counter = uiState.stats.todayCups,
-                        imageId = R.drawable.cup1fordb,
-                        dayProgress = "Today"
-                    )
-                    Spacer(modifier = modifier.size(8.dp))
-                    CoffeeProgressCard(
-                        counter = uiState.stats.weeklyCups,
-                        imageId = R.drawable.cup7fordb,
-                        dayProgress = "Week"
-                    )
-                    Spacer(modifier = modifier.size(8.dp))
-                    CoffeeProgressCard(
-                        counter = uiState.stats.monthlyCups,
-                        imageId = R.drawable.cupcorefordb2,
-                        dayProgress = "Month"
-                    )
+                if (isLandscapeMode) {
+                    // Landscape: Larger cards spread across screen
+                    Row(
+                        modifier = modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        CoffeeProgressCard(
+                            counter = uiState.stats.todayCups,
+                            imageId = R.drawable.cup1fordb,
+                            dayProgress = "Today"
+                        )
+                        CoffeeProgressCard(
+                            counter = uiState.stats.weeklyCups,
+                            imageId = R.drawable.cup7fordb,
+                            dayProgress = "Week"
+                        )
+                        CoffeeProgressCard(
+                            counter = uiState.stats.monthlyCups,
+                            imageId = R.drawable.cupcorefordb2,
+                            dayProgress = "Month"
+                        )
+                    }
+                } else {
+                    // Portrait: Original design
+                    Row(
+                        modifier = modifier.padding(horizontal = 4.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        CoffeeProgressCard(
+                            counter = uiState.stats.todayCups,
+                            imageId = R.drawable.cup1fordb,
+                            dayProgress = "Today"
+                        )
+                        Spacer(modifier = modifier.size(8.dp))
+                        CoffeeProgressCard(
+                            counter = uiState.stats.weeklyCups,
+                            imageId = R.drawable.cup7fordb,
+                            dayProgress = "Week"
+                        )
+                        Spacer(modifier = modifier.size(8.dp))
+                        CoffeeProgressCard(
+                            counter = uiState.stats.monthlyCups,
+                            imageId = R.drawable.cupcorefordb2,
+                            dayProgress = "Month"
+                        )
+                    }
                 }
+            }
+
+            if (showLevelDialog) {
+                LevelsDialogV3(true, { showLevelDialog = false }, uiState)
             }
             Spacer(modifier = modifier.size(24.dp))
 

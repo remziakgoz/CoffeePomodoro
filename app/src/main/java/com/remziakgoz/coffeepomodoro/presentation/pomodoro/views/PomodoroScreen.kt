@@ -1,7 +1,5 @@
 package com.remziakgoz.coffeepomodoro.presentation.pomodoro.views
 
-import android.annotation.SuppressLint
-import android.os.Build
 import android.widget.Toast
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
@@ -14,13 +12,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -45,9 +41,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -64,6 +58,7 @@ import com.remziakgoz.coffeepomodoro.presentation.components.StartButton
 import com.remziakgoz.coffeepomodoro.presentation.init.AppInitViewModel
 import com.remziakgoz.coffeepomodoro.presentation.pomodoro.PomodoroState
 import com.remziakgoz.coffeepomodoro.presentation.pomodoro.PomodoroViewModel
+import com.remziakgoz.coffeepomodoro.presentation.root.isLandscape
 
 @Composable
 fun PomodoroScreen(
@@ -270,8 +265,8 @@ fun PomodoroScreen(
                     // Middle Row - Clock, Button, Coffee (Left to Right)
                     Row(
                         modifier = Modifier
-                            .fillMaxWidth().
-                                padding(horizontal = 10.dp)
+                            .fillMaxWidth()
+                            .padding(horizontal = 10.dp)
                             .weight(1f),
                         horizontalArrangement = Arrangement.SpaceEvenly,
                         verticalAlignment = Alignment.CenterVertically
